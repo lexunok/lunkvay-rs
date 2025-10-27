@@ -1,168 +1,238 @@
+use crate::config::API_BASE_URL;
 use leptos::prelude::*;
-use reqwasm::http::Request;
-use serde::{Deserialize, Serialize};
-use wasm_bindgen_futures::spawn_local;
+use leptos_router::hooks::use_navigate;
+use reqwasm::http::{Request, Method};
+use serde::Serialize;
+use web_sys::Storage;
 
-#[derive(Serialize)]
-struct LoginRequest {
-    email: String,
-    password: String,
+// --- Structs for API requests ---
+
+#[derive(Serialize, Clone)]
+struct LoginRequest<'a> {
+    email: &'a str,
+    password: &'a str,
 }
 
-#[derive(Deserialize)]
-struct LoginResponse {
-    token: String,
+#[derive(Serialize, Clone)]
+struct RegisterRequest<'a> {
+    #[serde(rename = "firstName")]
+    first_name: &'a str,
+    #[serde(rename = "lastName")]
+    last_name: &'a str,
+    email: &'a str,
+    password: &'a str,
+}
+
+fn local_storage() -> Option<Storage> {
+    window().local_storage().ok().flatten()
 }
 
 #[component]
 pub fn LoginPage() -> impl IntoView {
-    // состояния (signal)
-    let (is_register, set_is_register) = signal(false);
-    let (email, set_email) = signal(String::new());
-    let (password, set_password) = signal(String::new());
-    let (first_name, set_first_name) = signal(String::new());
-    let (last_name, set_last_name) = signal(String::new());
-    let (register_email, set_register_email) = signal(String::new());
-    let (register_password, set_register_password) = signal(String::new());
-    let (error, set_error) = signal(String::new());
-    let (loading, set_loading) = signal(false);
+    // --- State Signals ---
+    //let (is_register_mode, set_is_register_mode) = signal(false);
+    let (error, set_error) = signal(Option::<String>::None);
 
-    // обработчик логина (через reqwasm)
-    let on_submit = {
-        let email = email.clone();
-        let password = password.clone();
-        let set_error = set_error.clone();
-        let set_loading = set_loading.clone();
-        let on_login = on_login.clone();
+    // --- Input Signals ---
+    let email = RwSignal::new(String::from("ryan.gosling@gmail.com"));
+    let password=  RwSignal::new(String::from("realhero"));
+    let first_name = RwSignal::new(String::new());
+    let last_name= RwSignal::new(String::new());
 
-        move |ev: web_sys::Event| {
-            ev.prevent_default();
-            let email = email.get();
-            let password = password.get();
-            let set_error = set_error.clone();
-            let set_loading = set_loading.clone();
-            let on_login = on_login.clone();
+    // --- Actions for API calls ---
+    let navigate = use_navigate();
 
-            spawn_local(async move {
-                set_loading.set(true);
-                set_error.set(String::new());
+    // let login_action = Action::new(move |(email, password): (String, String)| {
+    //     async move {
+    //         let request_body = serde_json::to_string(&LoginRequest {
+    //             email: &email,
+    //             password: &password,
+    //         })
+    //         .unwrap();
 
-                let req = LoginRequest { email, password };
+    //         let response = Request::new(&format!("{}/auth/login", API_BASE_URL))
+    //             .method(Method::POST)
+    //             .header("Content-Type", "application/json")
+    //             .body(request_body)
+    //             .send()
+    //             .await;
 
-                let resp = Request::post("/api/login")
-                    .header("Content-Type", "application/json")
-                    .body(serde_json::to_string(&req).unwrap())
-                    .send()
-                    .await;
+    //         match response {
+    //             Ok(res) if res.ok() => {
+    //                 let token = res.text().await.unwrap_or_default();
+    //                 if let Some(storage) = local_storage() {
+    //                     _ = storage.set_item("token", &token);
+    //                 }
+    //                 set_error.set(None);
+    //                 navigate("/profile", Default::default());
+    //             }
+    //             Ok(res) => {
+    //                 let error_text = res.text().await.unwrap_or_else(|_| "Unknown error".to_string());
+    //                 set_error.set(Some(format!("Login failed: {}", error_text)));
+    //             }
+    //             Err(err) => {
+    //                 set_error.set(Some(format!("Network error: {}", err)));
+    //             }
+    //         }
+    //     }
+    // });
 
-                match resp {
-                    Ok(r) if r.status() == 200 => {
-                        match r.json::<LoginResponse>().await {
-                            Ok(json) => {
-                                if let Some(window) = web_sys::window() {
-                                    if let Ok(Some(storage)) = window.local_storage() {
-                                        let _ = storage.set_item("jwt", &json.token);
-                                    }
-                                }
-                                // если передан WriteSignal<Page>, переключаем страницу
-                                if let Some(nav) = on_login {
-                                    nav.set(Page::CHATS);
-                                }
-                            }
-                            Err(e) => {
-                                set_error.set(format!("Ошибка парсинга ответа: {}", e));
-                            }
-                        }
-                    }
-                    Ok(r) => {
-                        set_error.set(format!("Ошибка входа: HTTP {}", r.status()));
-                    }
-                    Err(e) => {
-                        set_error.set(format!("Сетевая ошибка: {}", e));
-                    }
-                }
+    // let register_action = Action::new(
+    //     move |(first_name, last_name, email, password): (String, String, String, String)| {
+    //         async move {
+    //             let request_body = serde_json::to_string(&RegisterRequest {
+    //                 first_name: &first_name,
+    //                 last_name: &last_name,
+    //                 email: &email,
+    //                 password: &password,
+    //             })
+    //             .unwrap();
 
-                set_loading.set(false);
-            });
-        }
-    };
+    //             let response = Request::new(&format!("{}/auth/register", API_BASE_URL))
+    //                 .method(Method::POST)
+    //                 .header("Content-Type", "application/json")
+    //                 .body(request_body)
+    //                 .send()
+    //                 .await;
 
+    //             match response {
+    //                 Ok(res) if res.ok() => {
+    //                     set_error.set(None);
+    //                     set_is_register_mode.set(false); // Switch to login form on success
+    //                 }
+    //                 Ok(res) => {
+    //                     let error_text = res.text().await.unwrap_or_else(|_| "Unknown error".to_string());
+    //                     set_error.set(Some(format!("Registration failed: {}", error_text)));
+    //                 }
+    //                 Err(err) => {
+    //                     set_error.set(Some(format!("Network error: {}", err)));
+    //                 }
+    //             }
+    //         }
+    //     },
+    // );
+
+    // --- Event Handlers ---
+    // let on_login_submit = move |ev: ev::SubmitEvent| {
+    //     ev.prevent_default();
+    //     if login_email().is_empty() || login_password().is_empty() {
+    //         set_error.set(Some("Email and password cannot be empty.".to_string()));
+    //         return;
+    //     }
+    //     login_action.dispatch((login_email(), login_password()));
+    // };
+
+    // let on_register_submit = move |ev: ev::SubmitEvent| {
+    //     ev.prevent_default();
+    //     if register_first_name().is_empty()
+    //         || register_last_name().is_empty()
+    //         || register_email().is_empty()
+    //         || register_password().is_empty()
+    //     {
+    //         set_error.set(Some("All fields are required.".to_string()));
+    //         return;
+    //     }
+    //     register_action.dispatch((
+    //         register_first_name(),
+    //         register_last_name(),
+    //         register_email(),
+    //         register_password(),
+    //     ));
+    // };
+
+    // --- UI ---
     view! {
-        <main class="login-root" style="width:100%;height:100%;display:flex;justify-content:center;align-items:center;background:#1A1A1A;color:#E2DDBD;">
-            <form style="width:320px; display:flex; flex-direction:column;">
-                {move || if !is_register.get() {
-                    view! {
-                        <>
-                            <h1 style="text-align:center; font-size:24px; margin-bottom:12px;">"Вход в систему"</h1>
+        <div style="display: flex; justify-content: center; align-items: center; width: 100%; height: 100%; background-color: #1A1A1A;">
+            <form on:submit=on_login_submit style="display: flex; flex-direction: column; gap: 20px; width: 300px;">
+                <h2 style="color: #E2DDBD; text-align: center; font-size: 36px; font-weight: bold;">"Вход"</h2>
 
-                            <label style="font-size:14px; margin-bottom:6px;">"Email"</label>
-                            <input
-                                prop:value=email
-                                on:input=move |e| set_email.set(event_target_value(&e))
-                                class="input"
-                                style="background:#2A2A2A; color:#E2DDBD; border:0; padding:10px; margin-bottom:12px;"
-                                placeholder="Email"
-                            />
+                <div>
+                    <label style="color: #E2DDBD; font-size: 14px; margin-bottom: 5px; display: block;">"Email"</label>
+                    <input
+                        type="email"
+                        bind:value=email
+                        style="background-color: #2A2A2A; color: #E2DDBD; border: none; font-size: 16px; padding: 10px; width: 100%; border-radius: 5px; box-sizing: border-box;"
+                    />
+                </div>
 
-                            <label style="font-size:14px; margin-bottom:6px;">"Пароль"</label>
-                            <input
-                                prop:value=password
-                                type="password"
-                                on:input=move |e| set_password.set(event_target_value(&e))
-                                class="input"
-                                style="background:#2A2A2A; color:#E2DDBD; border:0; padding:10px; margin-bottom:12px;"
-                                placeholder="Пароль"
-                            />
+                <div>
+                    <label style="color: #E2DDBD; font-size: 14px; margin-bottom: 5px; display: block;">"Пароль"</label>
+                    <input
+                        type="password"
+                        bind:value=password
+                        style="background-color: #2A2A2A; color: #E2DDBD; border: none; font-size: 16px; padding: 10px; width: 100%; border-radius: 5px; box-sizing: border-box;"
+                    />
+                </div>
 
-                            <button type="submit" disabled=move || loading.get() style="background:#E2DDBD;color:#1A1A1A;border:0;padding:12px;font-weight:bold;margin-top:6px;">
-                                {move || if loading.get() { "Вход..." } else { "Войти" }}
-                            </button>
+                <button type="submit" style="background-color: #E2DDBD; color: #1A1A1A; border: none; font-size: 16px; font-weight: bold; padding: 15px 5px; width: 100%; cursor: pointer; border-radius: 5px;">
+                    "Войти"
+                </button>
 
-                            <p style="text-align:center; margin-top:12px; cursor:pointer; font-size:14px;"
-                               on:click=move |_| set_is_register.set(true)>
-                                "Нет аккаунта? Зарегистрироваться"
-                            </p>
+                <a href="/register" style="color: #E2DDBD; font-size: 14px; text-align: center; cursor: pointer; text-decoration: none;">
+                    "Нет аккаунта? Зарегистрироваться"
+                </a>
 
-                            <p style="color:#FF6B6B; text-align:center; margin-top:8px;">{move || error.get()}</p>
-                        </>
-                    }.into_any()
-                } else {
-                    view! {
-                        <>
-                            <h1 style="text-align:center; font-size:24px; margin-bottom:12px;">"Регистрация"</h1>
-
-                            <label style="font-size:14px; margin-bottom:6px;">"Имя"</label>
-                            <input prop:value=first_name on:input=move |e| set_first_name.set(event_target_value(&e))
-                                style="background:#2A2A2A; color:#E2DDBD; border:0; padding:10px; margin-bottom:12px;" />
-
-                            <label style="font-size:14px; margin-bottom:6px;">"Фамилия"</label>
-                            <input prop:value=last_name on:input=move |e| set_last_name.set(event_target_value(&e))
-                                style="background:#2A2A2A; color:#E2DDBD; border:0; padding:10px; margin-bottom:12px;" />
-
-                            <label style="font-size:14px; margin-bottom:6px;">"Email"</label>
-                            <input prop:value=register_email on:input=move |e| set_register_email.set(event_target_value(&e))
-                                style="background:#2A2A2A; color:#E2DDBD; border:0; padding:10px; margin-bottom:12px;" />
-
-                            <label style="font-size:14px; margin-bottom:6px;">"Пароль"</label>
-                            <input prop:value=register_password type="password" on:input=move |e| set_register_password.set(event_target_value(&e))
-                                style="background:#2A2A2A; color:#E2DDBD; border:0; padding:10px; margin-bottom:12px;" />
-
-                            <button type="button" on:click=move |_| {
-                                // реализуй регистрацию здесь (аналогично логину)
-                            } style="background:#E2DDBD;color:#1A1A1A;border:0;padding:12px;font-weight:bold;margin-top:6px;">
-                                "Зарегистрироваться"
-                            </button>
-
-                            <p style="text-align:center; margin-top:12px; cursor:pointer; font-size:14px;"
-                               on:click=move |_| set_is_register.set(false)>
-                                "Уже есть аккаунт? Войти"
-                            </p>
-
-                            <p style="color:#FF6B6B; text-align:center; margin-top:8px;">{move || error.get()}</p>
-                        </>
-                    }.into_any()
-                }}
+                // <Show when=move || error().is_some()>
+                //     <p style="color: #FF6B6B; font-size: 14px; text-align: center; max-width: 280px; margin: 0 auto;">
+                //         {error}
+                //     </p>
+                // </Show>
             </form>
-        </main>
+        </div>
     }
 }
+
+
+// <form on:submit=on_register_submit style="display: flex; flex-direction: column; gap: 20px; width: 300px;">
+//                     <h2 style="color: #E2DDBD; text-align: center; font-size: 36px; font-weight: bold;">"Регистрация"</h2>
+
+//                      <div>
+//                         <label style="color: #E2DDBD; font-size: 14px; margin-bottom: 5px; display: block;">"Имя"</label>
+//                         <input
+//                             type="text"
+//                             bind:value=first_name
+//                             style="background-color: #2A2A2A; color: #E2DDBD; border: none; font-size: 16px; padding: 10px; width: 100%; border-radius: 5px; box-sizing: border-box;"
+//                         />
+//                     </div>
+
+//                      <div>
+//                         <label style="color: #E2DDBD; font-size: 14px; margin-bottom: 5px; display: block;">"Фамилия"</label>
+//                         <input
+//                             type="text"
+//                             bind:value=last_name
+//                             style="background-color: #2A2A2A; color: #E2DDBD; border: none; font-size: 16px; padding: 10px; width: 100%; border-radius: 5px; box-sizing: border-box;"
+//                         />
+//                     </div>
+
+//                      <div>
+//                         <label style="color: #E2DDBD; font-size: 14px; margin-bottom: 5px; display: block;">"Email"</label>
+//                         <input
+//                             type="email"
+//                             bind:value=email
+//                             style="background-color: #2A2A2A; color: #E2DDBD; border: none; font-size: 16px; padding: 10px; width: 100%; border-radius: 5px; box-sizing: border-box;"
+//                         />
+//                     </div>
+
+//                      <div>
+//                         <label style="color: #E2DDBD; font-size: 14px; margin-bottom: 5px; display: block;">"Пароль"</label>
+//                         <input
+//                             type="password"
+//                             bind:value=password
+//                             style="background-color: #2A2A2A; color: #E2DDBD; border: none; font-size: 16px; padding: 10px; width: 100%; border-radius: 5px; box-sizing: border-box;"
+//                         />
+//                     </div>
+
+//                     <button type="submit" style="background-color: #E2DDBD; color: #1A1A1A; border: none; font-size: 16px; font-weight: bold; padding: 15px 5px; width: 100%; cursor: pointer; border-radius: 5px;">
+//                         "Зарегистрироваться"
+//                     </button>
+
+//                     // <p on:click=move |_| set_is_register_mode.set(false) style="color: #E2DDBD; font-size: 14px; text-align: center; cursor: pointer;">
+//                     //     "Уже есть аккаунт? Войти"
+//                     // </p>
+
+//                     // <Show when=move || error().is_some()>
+//                     //     <p style="color: #FF6B6B; font-size: 14px; text-align: center; max-width: 280px; margin: 0 auto;">
+//                     //         {error}
+//                     //     </p>
+//                     // </Show>
+//                 </form>
