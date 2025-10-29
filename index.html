@@ -12,6 +12,72 @@
                 color: #E2DDBD;
             }
         </style>
+        <style>
+            .login-page-container > div {
+                position: absolute;
+                top: 50%;
+                transform: translate(-50%, -50%);
+                transition-property: left, opacity;
+                transition-duration: 0.5s, 0.4s;
+                transition-timing-function: cubic-bezier(0.25, 0.1, 0.25, 1.0);
+            }
+            .login-page-container .form {
+                width: 320px;
+            }
+            .login-page-container .title h1 {
+                font-size: 5vw;
+                font-weight: bold;
+                margin: 0;
+                text-align: center;
+            }
+
+            /* --- LOGIN VIEW ACTIVE --- */
+            .login-view .login-title {
+                left: 15%;
+                opacity: 1;
+                transition-delay: 0.2s;
+            }
+            .login-view .login-form {
+                left: 50%;
+                opacity: 1;
+                transition-delay: 0.1s;
+            }
+            .login-view .register-title-shared {
+                left: 85%;
+                opacity: 1;
+                transition-delay: 0.1s;
+            }
+            .login-view .register-form {
+                left: 150%;
+                opacity: 0;
+                pointer-events: none;
+                transition-delay: 0s;
+            }
+
+            /* --- REGISTER VIEW ACTIVE --- */
+            .register-view .login-title {
+                left: -35%;
+                opacity: 0;
+                pointer-events: none;
+                transition-delay: 0s;
+            }
+            .register-view .login-form {
+                left: -50%;
+                opacity: 0;
+                pointer-events: none;
+                transition-delay: 0.1s;
+            }
+            .register-view .register-title-shared {
+                left: 15%;
+                opacity: 1;
+                transition-delay: 0.1s;
+            }
+            .register-view .register-form {
+                left: 50%;
+                opacity: 1;
+                transition-delay: 0.2s;
+            }
+        </style>
     </head>
     <body>
     </body>

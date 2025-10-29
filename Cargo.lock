@@ -972,6 +972,7 @@ dependencies = [
  "reqwasm",
  "serde",
  "serde_json",
+ "thiserror 1.0.69",
  "wasm-bindgen-futures",
  "web-sys",
 ]

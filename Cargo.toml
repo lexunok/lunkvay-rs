@@ -10,5 +10,6 @@ leptos_router = "0.8.9"
 reqwasm = "0.5.0"
 serde = "1.0.228"
 serde_json = "1.0.145"
+thiserror = "1.0"
 wasm-bindgen-futures = "0.4.54"
 web-sys = { version = "0.3.81", features = ["Window", "Storage"]}

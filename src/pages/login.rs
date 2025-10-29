@@ -1,26 +1,9 @@
-use crate::config::API_BASE_URL;
+use crate::api;
+use crate::models::auth::{LoginRequest, RegisterRequest};
 use crate::utils::local_storage;
 use leptos::ev;
 use leptos::prelude::*;
 use leptos_router::hooks::use_navigate;
-use reqwasm::http::{Method, Request};
-use serde::Serialize;
-
-#[derive(Serialize)]
-struct LoginRequest<'a> {
-    email: &'a str,
-    password: &'a str,
-}
-
-#[derive(Serialize)]
-struct RegisterRequest<'a> {
-    #[serde(rename = "firstName")]
-    first_name: &'a str,
-    #[serde(rename = "lastName")]
-    last_name: &'a str,
-    email: &'a str,
-    password: &'a str,
-}
 
 #[component]
 pub fn LoginPage() -> impl IntoView {
@@ -40,30 +23,11 @@ pub fn LoginPage() -> impl IntoView {
         let email = email.clone();
         let password = password.clone();
         async move {
-            let request_body = serde_json::to_string(&LoginRequest {
+            let creds = LoginRequest {
                 email: &email,
                 password: &password,
-            })
-            .unwrap();
-            let request = Request::new(&format!("{}/auth/login", API_BASE_URL))
-                .method(Method::POST)
-                .header("Content-Type", "application/json")
-                .body(request_body);
-
-            match request.send().await {
-                Ok(response) if response.ok() => {
-                    let token = response.text().await.unwrap_or_default();
-                    Ok(token)
-                }
-                Ok(response) => {
-                    let error_text = response
-                        .text()
-                        .await
-                        .unwrap_or_else(|_| "Неизвестная ошибка".to_string());
-                    Err(error_text)
-                }
-                Err(e) => Err(e.to_string()),
-            }
+            };
+            api::auth::login(creds).await.map_err(|e| e.to_string())
         }
     });
 
@@ -74,30 +38,15 @@ pub fn LoginPage() -> impl IntoView {
             let email = email.clone();
             let password = password.clone();
             async move {
-                let request_body = serde_json::to_string(&RegisterRequest {
+                let details = RegisterRequest {
                     first_name: &first_name,
                     last_name: &last_name,
                     email: &email,
                     password: &password,
-                })
-                .unwrap();
-
-                let request = Request::new(&format!("{}/auth/register", API_BASE_URL))
-                    .method(Method::POST)
-                    .header("Content-Type", "application/json")
-                    .body(request_body);
-
-                match request.send().await {
-                    Ok(response) if response.ok() => Ok(()),
-                    Ok(response) => {
-                        let error_text = response
-                            .text()
-                            .await
-                            .unwrap_or_else(|_| "Неизвестная ошибка".to_string());
-                        Err(error_text)
-                    }
-                    Err(e) => Err(e.to_string()),
-                }
+                };
+                api::auth::register(details)
+                    .await
+                    .map_err(|e| e.to_string())
             }
         },
     );
@@ -179,17 +128,15 @@ pub fn LoginPage() -> impl IntoView {
     };
 
     view! {
-        <div style="width: 100%; height: 100%; position: relative; overflow: hidden; background-color: #1A1A1A;">
+        <div
+            class="login-page-container"
+            class:login-view=move || !is_register_mode.get()
+            class:register-view=move || is_register_mode.get()
+            style="width: 100%; height: 100%; position: relative; overflow: hidden;"
+        >
             // Login Title
-            <div 
-                style:position="absolute"
-                style:top="50%"
-                style:left=move || if is_register_mode.get() { "-35%" } else { "15%" }
-                style:transform="translate(-50%, -50%)"
-                style:opacity=move || if is_register_mode.get() { "0" } else { "1" }
-                style:transition="left 0.5s cubic-bezier(0.25, 0.1, 0.25, 1.0), opacity 0.3s cubic-bezier(0.25, 0.1, 0.25, 1.0)"
-            >
-                <h1 style="font-size: 5vw; font-weight: bold; margin: 0; text-align: center;">
+            <div class="title login-title">
+                <h1>
                     "Вход в"
                     <br/>
                     "систему"
@@ -197,27 +144,12 @@ pub fn LoginPage() -> impl IntoView {
             </div>
 
             // Register Title (The Shared Element)
-            <div 
-                style:position="absolute"
-                style:top="50%"
-                style:left=move || if is_register_mode.get() { "15%" } else { "85%" }
-                style:transform="translate(-50%, -50%)"
-                style:transition="left 0.5s cubic-bezier(0.25, 0.1, 0.25, 1.0)"
-            >
-                <h1 style="font-size: 5vw; font-weight: bold; margin: 0; text-align: center;">"Регистрация"</h1>
+            <div class="title register-title-shared">
+                <h1 on:click=to_register style="cursor: pointer;">"Регистрация"</h1>
             </div>
 
             // Login Form
-            <div 
-                style:position="absolute"
-                style:top="50%"
-                style:left=move || if is_register_mode.get() { "-50%" } else { "50%" }
-                style:transform="translate(-50%, -50%)"
-                style:width="320px"
-                style:opacity=move || if is_register_mode.get() { "0" } else { "1" }
-                style:pointer-events=move || if is_register_mode.get() { "none" } else { "auto" }
-                style:transition="left 0.5s cubic-bezier(0.25, 0.1, 0.25, 1.0), opacity 0.3s cubic-bezier(0.25, 0.1, 0.25, 1.0)"
-            >
+            <div class="form login-form">
                 <form on:submit=on_login_submit style:display="flex" style:flex-direction="column" style:gap="20px">
                     <h2 style="text-align: center; font-size: 36px; font-weight: bold; margin:0 0 20px 0;">"Вход"</h2>
                     <div>
@@ -238,16 +170,7 @@ pub fn LoginPage() -> impl IntoView {
             </div>
 
             // Register Form
-            <div 
-                style:position="absolute"
-                style:top="50%"
-                style:left=move || if is_register_mode.get() { "50%" } else { "150%" }
-                style:transform="translate(-50%, -50%)"
-                style:width="320px"
-                style:opacity=move || if is_register_mode.get() { "1" } else { "0" }
-                style:pointer-events=move || if is_register_mode.get() { "auto" } else { "none" }
-                style:transition="left 0.5s cubic-bezier(0.25, 0.1, 0.25, 1.0), opacity 0.3s cubic-bezier(0.25, 0.1, 0.25, 1.0) 0.1s"
-            >
+            <div class="form register-form">
                 <form on:submit=on_register_submit style:display="flex" style:flex-direction="column" style:gap="15px">
                     <h2 style="text-align: center; font-size: 36px; font-weight: bold; margin:0 0 10px 0;">"Регистрация"</h2>
                     <div>
