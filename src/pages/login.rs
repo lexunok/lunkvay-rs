@@ -4,13 +4,18 @@ use crate::utils::local_storage;
 use leptos::ev;
 use leptos::prelude::*;
 use leptos_router::hooks::use_navigate;
+use stylance::import_style;
+
+import_style!(style, "login.module.scss");
+
 
 #[component]
 pub fn LoginPage() -> impl IntoView {
+
+    // Сигналы
     let (is_register_mode, set_is_register_mode) = signal(false);
     let (error, set_error) = signal(Option::<String>::None);
 
-    // --- Unified Signals ---
     let first_name = RwSignal::new(String::new());
     let last_name = RwSignal::new(String::new());
     let email = RwSignal::new("ryan.gosling@gmail.com".to_string());
@@ -18,7 +23,7 @@ pub fn LoginPage() -> impl IntoView {
 
     let navigate = use_navigate();
 
-    // --- Actions ---
+    // Экшоны для асинхронного запроса
     let login_action = Action::new_local(|(email, password): &(String, String)| {
         let email = email.clone();
         let password = password.clone();
@@ -51,7 +56,7 @@ pub fn LoginPage() -> impl IntoView {
         },
     );
 
-    // --- Effects to handle action results ---
+    // Эффекты для обработки результата с экшона
     Effect::new(move |_| {
         if let Some(result) = login_action.value().get() {
             match result {
@@ -74,7 +79,7 @@ pub fn LoginPage() -> impl IntoView {
             match result {
                 Ok(_) => {
                     set_error.set(None);
-                    set_is_register_mode.set(false); // Switch to login on success
+                    set_is_register_mode.set(false);
                 }
                 Err(e) => {
                     set_error.set(Some(format!("Ошибка регистрации: {}", e)));
@@ -83,7 +88,7 @@ pub fn LoginPage() -> impl IntoView {
         }
     });
 
-    // --- Event Handlers ---
+    // Ивенты
     let on_login_submit = move |ev: ev::SubmitEvent| {
         ev.prevent_default();
         if email.get().is_empty() || password.get().is_empty() {
@@ -113,29 +118,21 @@ pub fn LoginPage() -> impl IntoView {
 
     let to_register = move |ev: ev::MouseEvent| {
         ev.prevent_default();
-        set_error.set(None);
-        password.set(String::new());
         set_is_register_mode.set(true);
     };
 
     let to_login = move |ev: ev::MouseEvent| {
         ev.prevent_default();
-        set_error.set(None);
-        password.set(String::new());
-        first_name.set(String::new());
-        last_name.set(String::new());
         set_is_register_mode.set(false);
     };
 
     view! {
         <div
-            class="login-page-container"
-            class:login-view=move || !is_register_mode.get()
-            class:register-view=move || is_register_mode.get()
-            style="width: 100%; height: 100%; position: relative; overflow: hidden;"
+            class=style::login_page_container
+            class:login_view=move || !is_register_mode.get()
+            class:register_view=move || is_register_mode.get()
         >
-            // Login Title
-            <div class="title login-title">
+            <div class=format!("{} {}", style::title, style::login_title)>
                 <h1>
                     "Вход в"
                     <br/>
@@ -143,64 +140,60 @@ pub fn LoginPage() -> impl IntoView {
                 </h1>
             </div>
 
-            // Register Title (The Shared Element)
-            <div class="title register-title-shared">
-                <h1 on:click=to_register style="cursor: pointer;">"Регистрация"</h1>
+            <div class=format!("{} {}", style::title, style::register_title_shared)>
+                <h1 on:click=to_register class=style::register_title_h1>"Регистрация"</h1>
             </div>
 
-            // Login Form
-            <div class="form login-form">
-                <form on:submit=on_login_submit style:display="flex" style:flex-direction="column" style:gap="20px">
-                    <h2 style="text-align: center; font-size: 36px; font-weight: bold; margin:0 0 20px 0;">"Вход"</h2>
+            <div class=format!("{} {}", style::form_wrapper, style::login_form_wrapper)>
+                <form on:submit=on_login_submit class=style::login_form>
+                    <h2>"Вход"</h2>
                     <div>
-                        <label style="font-size: 14px; margin-bottom: 5px; display: block;">"Email"</label>
-                        <input type="email" prop:value=email on:input=move |ev| email.set(event_target_value(&ev)) style="background-color: #2A2A2A; color: #E2DDBD; border: none; font-size: 16px; padding: 10px; width: 100%; border-radius: 5px; box-sizing: border-box; height: 40px;"/>
+                        <label>"Email"</label>
+                        <input type="email" bind:value=email/>
                     </div>
                     <div>
-                        <label style="font-size: 14px; margin-bottom: 5px; display: block;">"Пароль"</label>
-                        <input type="password" prop:value=password on:input=move |ev| password.set(event_target_value(&ev)) style="background-color: #2A2A2A; color: #E2DDBD; border: none; font-size: 16px; padding: 10px; width: 100%; border-radius: 5px; box-sizing: border-box; height: 40px;"/>
+                        <label>"Пароль"</label>
+                        <input type="password" bind:value=password/>
                     </div>
-                    <button type="submit" style="background-color: #E2DDBD; color: #1A1A1A; border: none; font-size: 16px; font-weight: bold; padding: 15px 5px; width: 100%; cursor: pointer; border-radius: 5px; margin-top: 10px;">
+                    <button type="submit">
                         "Войти"
                     </button>
-                    <p on:click=to_register style="font-size: 14px; text-align: center; cursor: pointer; margin: 20px 0 0 0;">
+                    <p on:click=to_register>
                         "Нет аккаунта? Зарегистрироваться"
                     </p>
                 </form>
             </div>
 
-            // Register Form
-            <div class="form register-form">
-                <form on:submit=on_register_submit style:display="flex" style:flex-direction="column" style:gap="15px">
-                    <h2 style="text-align: center; font-size: 36px; font-weight: bold; margin:0 0 10px 0;">"Регистрация"</h2>
+            <div class=format!("{} {}", style::form_wrapper, style::register_form_wrapper)>
+                <form on:submit=on_register_submit class=style::register_form>
+                    <h2>"Регистрация"</h2>
                     <div>
-                        <label style="font-size: 14px; margin-bottom: 5px; display: block;">"Имя"</label>
-                        <input type="text" prop:value=first_name on:input=move |ev| first_name.set(event_target_value(&ev)) style="background-color: #2A2A2A; color: #E2DDBD; border: none; font-size: 16px; padding: 10px; width: 100%; border-radius: 5px; box-sizing: border-box; height: 40px;"/>
+                        <label>"Имя"</label>
+                        <input type="text" bind:value=first_name/>
                     </div>
                     <div>
-                        <label style="font-size: 14px; margin-bottom: 5px; display: block;">"Фамилия"</label>
-                        <input type="text" prop:value=last_name on:input=move |ev| last_name.set(event_target_value(&ev)) style="background-color: #2A2A2A; color: #E2DDBD; border: none; font-size: 16px; padding: 10px; width: 100%; border-radius: 5px; box-sizing: border-box; height: 40px;"/>
+                        <label>"Фамилия"</label>
+                        <input type="text" bind:value=last_name/>
                     </div>
                     <div>
-                        <label style="font-size: 14px; margin-bottom: 5px; display: block;">"Email"</label>
-                        <input type="email" prop:value=email on:input=move |ev| email.set(event_target_value(&ev)) style="background-color: #2A2A2A; color: #E2DDBD; border: none; font-size: 16px; padding: 10px; width: 100%; border-radius: 5px; box-sizing: border-box; height: 40px;"/>
+                        <label>"Email"</label>
+                        <input type="email" bind:value=email/>
                     </div>
                     <div>
-                        <label style="font-size: 14px; margin-bottom: 5px; display: block;">"Пароль"</label>
-                        <input type="password" prop:value=password on:input=move |ev| password.set(event_target_value(&ev)) style="background-color: #2A2A2A; color: #E2DDBD; border: none; font-size: 16px; padding: 10px; width: 100%; border-radius: 5px; box-sizing: border-box; height: 40px;"/>
+                        <label>"Пароль"</label>
+                        <input type="password" bind:value=password/>
                     </div>
-                    <button type="submit" style="background-color: #E2DDBD; color: #1A1A1A; border: none; font-size: 16px; font-weight: bold; padding: 15px 5px; width: 100%; cursor: pointer; border-radius: 5px; margin-top: 10px;">
+                    <button type="submit">
                         "Зарегистрироваться"
                     </button>
-                    <p on:click=to_login style="font-size: 14px; text-align: center; cursor: pointer; margin: 15px 0 0 0;">
+                    <p on:click=to_login>
                         "Уже есть аккаунт? Войти"
                     </p>
                 </form>
             </div>
 
-            // Error Message Area
             <Show when=move || error.get().is_some()>
-                <p style="color: #FF6B6B; font-size: 14px; text-align: center; position: absolute; bottom: 20px; width: 100%; left: 0;">
+                <p class=style::error_message>
                     {error.get().unwrap_or_default()}
                 </p>
             </Show>
