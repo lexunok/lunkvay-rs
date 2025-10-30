@@ -974,6 +974,7 @@ dependencies = [
  "serde_json",
  "stylance",
  "thiserror 1.0.69",
+ "uuid",
  "wasm-bindgen-futures",
  "web-sys",
 ]
@@ -1891,6 +1892,7 @@ checksum = "2f87b8aa10b915a06587d0dec516c282ff295b475d94abf425d62b57710070a2"
 dependencies = [
  "getrandom",
  "js-sys",
+ "serde",
  "wasm-bindgen",
 ]
 

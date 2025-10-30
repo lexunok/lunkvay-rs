@@ -29,6 +29,54 @@ html, body, #root {
 }
 
 
+.friend_card-79198a4 {
+    width: 120px;
+    height: 120px;
+    background-color: #3a3a3a;
+    border-radius: 5px;
+    padding: 10px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 5px;
+    cursor: pointer;
+    text-align: center;
+
+    .friend_avatar-79198a4 {
+        position: relative;
+        width: 60px;
+        height: 60px;
+
+        img {
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            object-fit: cover;
+        }
+    }
+
+    span {
+        font-size: 14px;
+        max-width: 100px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+}
+
+.online_indicator-79198a4 {
+    position: absolute;
+    bottom: 2px;
+    right: 2px;
+    width: 12px;
+    height: 12px;
+    background-color: #4caf50;
+    border-radius: 50%;
+    border: 2px solid #3a3a3a;
+}
+
+
 .login_page_container-ae3ab45 {
     width: 100%;
     height: 100%;
@@ -212,4 +260,156 @@ html, body, #root {
     cursor: pointer;
     text-decoration: none;
     font-size: 48px;
+}
+
+
+.profile_page-bd9a733 {
+    display: grid;
+    grid-template-columns: 2fr 1fr;
+    gap: 20px;
+    padding: 20px;
+    color: #e2ddbd;
+    background-color: #303030;
+    height: 100%;
+}
+
+.main_content-bd9a733 {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.profile_header-bd9a733 {
+    display: flex;
+    align-items: center;
+    gap: 40px;
+    padding: 20px;
+    border: 1px solid #e2ddbd;
+    border-top: none;
+
+    .avatar-bd9a733 {
+        width: 150px;
+        height: 150px;
+        border-radius: 50%;
+        overflow: hidden;
+
+        img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+    }
+
+    .user_info-bd9a733 {
+        h1 {
+            font-size: 36px;
+            font-weight: bold;
+            margin: 0;
+        }
+
+        .status-bd9a733 {
+            font-size: 20px;
+            margin: 5px 0 0 0;
+            color: #aaa;
+        }
+    }
+}
+
+.about_section-bd9a733 {
+    padding: 20px;
+    border: 1px solid #e2ddbd;
+    border-top: none;
+    border-bottom: none;
+
+    h2 {
+        font-size: 24px;
+        font-weight: bold;
+        margin-bottom: 15px;
+    }
+
+    .about_box-bd9a733 {
+        background-color: #2a2a2a;
+        padding: 15px;
+        border-radius: 5px;
+
+        h3 {
+            font-size: 18px;
+            font-weight: bold;
+            margin: 0 0 5px 0;
+        }
+
+        p {
+            color: #aaa;
+            margin: 0;
+            white-space: pre-wrap;
+        }
+    }
+}
+
+.sidebar-bd9a733 {
+    background-color: #2a2a2a;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+}
+
+.friends_section-bd9a733 {
+    .friends_header-bd9a733 {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        gap: 10px;
+        padding: 15px;
+        border-bottom: 1px solid #e2ddbd;
+
+        h2 {
+            font-size: 20px;
+            font-weight: bold;
+            margin: 0;
+        }
+
+        span {
+            font-size: 20px;
+            color: #aaa;
+        }
+    }
+
+    .friends_grid-bd9a733 {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+        gap: 10px;
+        padding: 15px;
+        max-height: 60vh;
+        overflow-y: auto;
+    }
+}
+
+
+
+.actions-bd9a733 {
+    padding: 15px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+
+    button {
+        padding: 10px 5px;
+        font-weight: bold;
+        background-color: #e2ddbd;
+        color: #1a1a1a;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+
+        &.secondary_button-bd9a733 {
+            background-color: transparent;
+            color: #e2ddbd;
+            border: 1px solid #e2ddbd;
+        }
+    }
+}
+
+.error_message-bd9a733 {
+    color: #ff6b6b;
+    padding: 20px;
 }

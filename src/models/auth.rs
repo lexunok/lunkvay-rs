@@ -1,19 +1,17 @@
 use serde::Serialize;
 
 #[derive(Serialize, Clone, Debug)]
-pub struct LoginRequest<'a> {
-    pub email: &'a str,
-    pub password: &'a str,
+pub struct LoginRequest {
+    pub email: String,
+    pub password: String,
 }
 
 #[derive(Serialize, Clone, Debug)]
-pub struct RegisterRequest<'a> {
-    #[serde(rename = "firstName")]
-    pub first_name: &'a str,
-    #[serde(rename = "lastName")]
-    pub last_name: &'a str,
-    #[serde(rename = "userName")]
-    pub user_name: &'a str,
-    pub email: &'a str,
-    pub password: &'a str,
+#[serde(rename_all = "camelCase")]
+pub struct RegisterRequest {
+    pub first_name: String,
+    pub last_name: String,
+    pub user_name: String,
+    pub email: String,
+    pub password: String,
 }

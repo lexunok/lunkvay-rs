@@ -29,8 +29,8 @@ pub fn LoginPage() -> impl IntoView {
         let password = password.clone();
         async move {
             let creds = LoginRequest {
-                email: &email,
-                password: &password,
+                email: email,
+                password: password,
             };
             api::auth::login(creds).await.map_err(|e| e.to_string())
         }
@@ -45,11 +45,11 @@ pub fn LoginPage() -> impl IntoView {
             let password = password.clone();
             async move {
                 let details = RegisterRequest {
-                    first_name: &first_name,
-                    last_name: &last_name,
-                    user_name: &user_name,
-                    email: &email,
-                    password: &password,
+                    first_name: first_name,
+                    last_name: last_name,
+                    user_name: user_name,
+                    email: email,
+                    password: password,
                 };
                 api::auth::register(details)
                     .await
