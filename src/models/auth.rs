@@ -12,6 +12,8 @@ pub struct RegisterRequest<'a> {
     pub first_name: &'a str,
     #[serde(rename = "lastName")]
     pub last_name: &'a str,
+    #[serde(rename = "userName")]
+    pub user_name: &'a str,
     pub email: &'a str,
     pub password: &'a str,
 }

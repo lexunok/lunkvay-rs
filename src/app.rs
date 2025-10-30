@@ -7,6 +7,9 @@ use leptos::prelude::*;
 use leptos_router::components::*;
 use leptos_router::hooks::{use_location, use_navigate};
 use leptos_router::path;
+use stylance::import_style;
+
+import_style!(style, "app.module.scss");
 
 #[component]
 fn MainLayout() -> impl IntoView {
@@ -31,36 +34,22 @@ fn MainLayout() -> impl IntoView {
         }
     });
 
-    let main_style = move || {
-        if navigation_is_active() {
-            "
-                margin: 100px auto 0 auto;
-                width: 100%;
-                max-width: 1440px;
-                height: calc(100vh - 100px);
-                color: white;
-                font-size: 24px;
-            "
-        } else {
-            "
-                width: 100%;
-                height: 100%;
-                color: white;
-                font-size: 24px;
-            "
-        }
-    };
-
     view! {
-        <div
-            class="main-window"
-            style="background-color:#1A1A1A; width:100%; height:100%;"
-        >
+        <div class=style::main_window>
             <Show when=navigation_is_active>
                 <Navigation/>
             </Show>
 
-            <main class="content" style=main_style>
+            <main
+                class={move || {
+                    let conditional_class = if navigation_is_active() {
+                        style::with_nav
+                    } else {
+                        style::without_nav
+                    };
+                    format!("content {}", conditional_class)
+                }}
+            >
                 <Routes fallback=|| "Not found.">
                     <Route path=path!("/") view=|| view! { <div/> }/>
                     <Route path=path!("/auth") view=LoginPage/>

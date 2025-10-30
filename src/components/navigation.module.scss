@@ -1,0 +1,32 @@
+.nav_container {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    display: flex;
+    align-items: center;
+    gap: 2rem;
+    padding: 1rem 2rem;
+    background-color: #303030;
+    color: #E2DDBD;
+    font-size: 24px;
+    box-sizing: border-box;
+}
+
+.nav_link {
+    background: none;
+    border: none;
+    color: #E2DDBD;
+    cursor: pointer;
+    font-size: 24px;
+    text-decoration: none;
+}
+
+.logo_link {
+    background: none;
+    border: none;
+    color: #E2DDBD;
+    cursor: pointer;
+    text-decoration: none;
+    font-size: 48px;
+}

@@ -8,7 +8,6 @@ use stylance::import_style;
 
 import_style!(style, "login.module.scss");
 
-
 #[component]
 pub fn LoginPage() -> impl IntoView {
 
@@ -18,6 +17,7 @@ pub fn LoginPage() -> impl IntoView {
 
     let first_name = RwSignal::new(String::new());
     let last_name = RwSignal::new(String::new());
+    let user_name = RwSignal::new(String::new());
     let email = RwSignal::new("ryan.gosling@gmail.com".to_string());
     let password = RwSignal::new("realhero".to_string());
 
@@ -37,15 +37,17 @@ pub fn LoginPage() -> impl IntoView {
     });
 
     let register_action = Action::new_local(
-        |(first_name, last_name, email, password): &(String, String, String, String)| {
+        |(first_name, last_name, user_name, email, password): &(String, String, String, String, String)| {
             let first_name = first_name.clone();
             let last_name = last_name.clone();
+            let user_name = user_name.clone();
             let email = email.clone();
             let password = password.clone();
             async move {
                 let details = RegisterRequest {
                     first_name: &first_name,
                     last_name: &last_name,
+                    user_name: &user_name,
                     email: &email,
                     password: &password,
                 };
@@ -102,6 +104,7 @@ pub fn LoginPage() -> impl IntoView {
         ev.prevent_default();
         if first_name.get().is_empty()
             || last_name.get().is_empty()
+            || user_name.get().is_empty()
             || email.get().is_empty()
             || password.get().is_empty()
         {
@@ -111,6 +114,7 @@ pub fn LoginPage() -> impl IntoView {
         register_action.dispatch_local((
             first_name.get(),
             last_name.get(),
+            user_name.get(),
             email.get(),
             password.get(),
         ));
@@ -174,6 +178,10 @@ pub fn LoginPage() -> impl IntoView {
                     <div>
                         <label>"Фамилия"</label>
                         <input type="text" bind:value=last_name/>
+                    </div>
+                    <div>
+                        <label>"Nickname"</label>
+                        <input type="text" bind:value=user_name/>
                     </div>
                     <div>
                         <label>"Email"</label>
