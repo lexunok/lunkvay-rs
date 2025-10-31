@@ -22,6 +22,10 @@ pub fn Navigation() -> impl IntoView {
             <a href="/chats" class=style::nav_link>
                 "Чаты"
             </a>
+
+            <a href="/logout" class=style::nav_link>
+                "Выйти"
+            </a>
         </nav>
     }
 }

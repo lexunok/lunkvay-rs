@@ -1,4 +1,4 @@
-use crate::{api, api::error::ApiError, components::friend_card::FriendCard, config::API_BASE_URL, utils::{clear_token, get_current_user_id}};
+use crate::{api, api::error::ApiError, components::{friend_card::FriendCard, spinner::Spinner}, config::API_BASE_URL, utils::{clear_token, get_current_user_id}};
 use leptos::prelude::*;
 use leptos_router::{hooks::{use_navigate, use_params}, params::Params};
 use stylance::import_style;
@@ -28,9 +28,7 @@ pub fn ProfilePage() -> impl IntoView {
     });
 
     let profile_view = move || {
-
         profile_resource.get().map(|result| match result {
-
             Ok(profile) => {
                 let avatar_url = format!(
                     "{}/avatar/{}",
@@ -42,33 +40,29 @@ pub fn ProfilePage() -> impl IntoView {
                 view! {
                     <div class=style::profile_page>
                         <div class=style::main_content>
-                            <header class=style::profile_header>
+                            <div class=style::profile_banner></div>
+                            <div class=style::user_info_card>
                                 <div class=style::avatar>
                                     <img src=avatar_url alt="User avatar" onerror="this.onerror=null;this.src='/public/images/userdefault.jpg';"/>
                                 </div>
-                                <div class=style::user_info>
-                                    <h1>
-                                        {format!(
-                                            "{} {}",
-                                            profile.user.first_name.clone().unwrap_or_default(),
-                                            profile.user.last_name.clone().unwrap_or_default()
-                                        )}
-                                    </h1>
-                                    <p class=style::status>
-                                        {profile.status.clone().unwrap_or_default()}
-                                    </p>
-                                </div>
-                            </header>
-                            <section class=style::about_section>
-                                <h2>"Информация"</h2>
-                                <div class=style::about_box>
-                                    <h3>"О себе"</h3>
-                                    <p>{profile.about.clone().unwrap_or_default()}</p>
-                                </div>
-                            </section>
+                                <h1>
+                                    {format!(
+                                        "{} {}",
+                                        profile.user.first_name.clone().unwrap_or_default(),
+                                        profile.user.last_name.clone().unwrap_or_default()
+                                    )}
+                                </h1>
+                                <p class=style::status>
+                                    {profile.status.clone().unwrap_or_default()}
+                                </p>
+                            </div>
+                            <div class=style::section_card>
+                                <h2>"О себе"</h2>
+                                <div>{profile.about.clone().unwrap_or_default()}</div>
+                            </div>
                         </div>
                         <aside class=style::sidebar>
-                            <div class=style::friends_section>
+                            <div class=style::friends_card>
                                 <div class=style::friends_header>
                                     <h2>"Друзья"</h2>
                                     <span>{profile.friends_count.unwrap_or(0)}</span>
@@ -84,7 +78,7 @@ pub fn ProfilePage() -> impl IntoView {
                                 </div>
                             </div>
                             <Show when=move || is_current_user>
-                                <div class=style::actions>
+                                <div class=style::actions_card>
                                     <button>"Редактировать профиль"</button>
                                     <button class=style::secondary_button>"Настройки"</button>
                                 </div>
@@ -104,9 +98,8 @@ pub fn ProfilePage() -> impl IntoView {
         })
     };
 
-
     view! {
-        <Suspense fallback=|| view! { <p>"Загрузка профиля..."</p> }>
+        <Suspense fallback=|| view! { <div class=style::spinner_container><Spinner /></div> }>
             {profile_view}
         </Suspense>
     }

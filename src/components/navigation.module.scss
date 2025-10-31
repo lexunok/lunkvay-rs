@@ -11,6 +11,7 @@
     color: #E2DDBD;
     font-size: 24px;
     box-sizing: border-box;
+    z-index: 100;
 }
 
 .nav_link {
@@ -20,6 +21,10 @@
     cursor: pointer;
     font-size: 24px;
     text-decoration: none;
+
+    &:hover {
+        color: rgba(226, 221, 189, 0.7);
+    }
 }
 
 .logo_link {

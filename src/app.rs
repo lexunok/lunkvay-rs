@@ -2,7 +2,7 @@ use crate::components::navigation::Navigation;
 use crate::pages::{
     chats::ChatsPage, friends::FriendsPage, login::LoginPage, profile::ProfilePage,
 };
-use crate::utils::local_storage;
+use crate::utils::{clear_token, local_storage};
 use leptos::prelude::*;
 use leptos_router::components::*;
 use leptos_router::hooks::{use_location, use_navigate};
@@ -26,6 +26,9 @@ fn MainLayout() -> impl IntoView {
         if token_is_present {
             if pathname.starts_with("/auth") {
                 navigate("/profile", Default::default());
+            } else if pathname.starts_with("/logout") {
+                clear_token();
+                navigate("/auth", Default::default());
             }
         } else {
             if !pathname.starts_with("/auth") {

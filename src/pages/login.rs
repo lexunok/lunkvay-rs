@@ -1,4 +1,5 @@
 use crate::api;
+use crate::components::spinner::Spinner;
 use crate::models::auth::{LoginRequest, RegisterRequest};
 use crate::utils::local_storage;
 use leptos::ev;
@@ -10,8 +11,6 @@ import_style!(style, "login.module.scss");
 
 #[component]
 pub fn LoginPage() -> impl IntoView {
-
-    // Сигналы
     let (is_register_mode, set_is_register_mode) = signal(false);
     let (error, set_error) = signal(Option::<String>::None);
 
@@ -23,7 +22,6 @@ pub fn LoginPage() -> impl IntoView {
 
     let navigate = use_navigate();
 
-    // Экшоны для асинхронного запроса
     let login_action = Action::new_local(|(email, password): &(String, String)| {
         let email = email.clone();
         let password = password.clone();
@@ -58,7 +56,6 @@ pub fn LoginPage() -> impl IntoView {
         },
     );
 
-    // Эффекты для обработки результата с экшона
     Effect::new(move |_| {
         if let Some(result) = login_action.value().get() {
             match result {
@@ -90,7 +87,6 @@ pub fn LoginPage() -> impl IntoView {
         }
     });
 
-    // Ивенты
     let on_login_submit = move |ev: ev::SubmitEvent| {
         ev.prevent_default();
         if email.get().is_empty() || password.get().is_empty() {
@@ -130,12 +126,15 @@ pub fn LoginPage() -> impl IntoView {
         set_is_register_mode.set(false);
     };
 
+    let is_loading = move || login_action.pending().get() || register_action.pending().get();
+
     view! {
         <div
             class=style::login_page_container
             class:login_view=move || !is_register_mode.get()
             class:register_view=move || is_register_mode.get()
         >
+
             <div class=format!("{} {}", style::title, style::login_title)>
                 <h1>
                     "Вход в"
@@ -150,16 +149,19 @@ pub fn LoginPage() -> impl IntoView {
 
             <div class=format!("{} {}", style::form_wrapper, style::login_form_wrapper)>
                 <form on:submit=on_login_submit class=style::login_form>
+                    <div class=style::loading_overlay style:display=move || if is_loading() { "flex" } else { "none" } >
+                        <Spinner />
+                    </div>
                     <h2>"Вход"</h2>
                     <div>
                         <label>"Email"</label>
-                        <input type="email" bind:value=email/>
+                        <input type="email" prop:disabled=is_loading bind:value=email/>
                     </div>
                     <div>
                         <label>"Пароль"</label>
-                        <input type="password" bind:value=password/>
+                        <input type="password" prop:disabled=is_loading bind:value=password/>
                     </div>
-                    <button type="submit">
+                    <button type="submit" prop:disabled=is_loading>
                         "Войти"
                     </button>
                     <p on:click=to_register>
@@ -170,28 +172,31 @@ pub fn LoginPage() -> impl IntoView {
 
             <div class=format!("{} {}", style::form_wrapper, style::register_form_wrapper)>
                 <form on:submit=on_register_submit class=style::register_form>
+                    <div class=style::loading_overlay style:display=move || if is_loading() { "flex" } else { "none" } >
+                        <Spinner />
+                    </div>
                     <h2>"Регистрация"</h2>
                     <div>
                         <label>"Имя"</label>
-                        <input type="text" bind:value=first_name/>
+                        <input type="text" prop:disabled=is_loading bind:value=first_name/>
                     </div>
                     <div>
                         <label>"Фамилия"</label>
-                        <input type="text" bind:value=last_name/>
+                        <input type="text" prop:disabled=is_loading bind:value=last_name/>
                     </div>
                     <div>
                         <label>"Nickname"</label>
-                        <input type="text" bind:value=user_name/>
+                        <input type="text" prop:disabled=is_loading bind:value=user_name/>
                     </div>
                     <div>
                         <label>"Email"</label>
-                        <input type="email" bind:value=email/>
+                        <input type="email" prop:disabled=is_loading bind:value=email/>
                     </div>
                     <div>
                         <label>"Пароль"</label>
-                        <input type="password" bind:value=password/>
+                        <input type="password" prop:disabled=is_loading bind:value=password/>
                     </div>
-                    <button type="submit">
+                    <button type="submit" prop:disabled=is_loading>
                         "Зарегистрироваться"
                     </button>
                     <p on:click=to_login>
@@ -200,7 +205,7 @@ pub fn LoginPage() -> impl IntoView {
                 </form>
             </div>
 
-            <Show when=move || error.get().is_some()>
+            <Show when=move || error.get().is_some() && !is_loading()>
                 <p class=style::error_message>
                     {error.get().unwrap_or_default()}
                 </p>
