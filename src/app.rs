@@ -55,6 +55,7 @@ fn MainLayout() -> impl IntoView {
                     <Route path=path!("/auth") view=LoginPage/>
                     <Route path=path!("/chats") view=ChatsPage/>
                     <Route path=path!("/profile") view=ProfilePage/>
+                    <Route path=path!("/profile/:id") view=ProfilePage/>
                     <Route path=path!("/friends") view=FriendsPage/>
                 </Routes>
             </main>

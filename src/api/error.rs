@@ -1,4 +1,6 @@
 use thiserror::Error;
+use leptos_router::params::ParamsError;
+use reqwasm::http::Response;
 
 #[derive(Error, Debug, Clone, PartialEq)]
 pub enum ApiError {
@@ -10,4 +12,22 @@ pub enum ApiError {
     Parsing(String),
     #[error("Ошибка сервера: {0}")]
     Server(String),
+    #[error("Не найдено")]
+    NotFound,
+}
+
+impl From<ParamsError> for ApiError {
+    fn from(_: ParamsError) -> Self {
+        ApiError::NotFound
+    }
+}
+
+impl ApiError {
+    pub async fn from_response(response: Response) -> Self {
+        let error_text = response
+            .text()
+            .await
+            .unwrap_or_else(|_| "Не удалось получить текст ошибки".to_string());
+        ApiError::Server(error_text)
+    }
 }
