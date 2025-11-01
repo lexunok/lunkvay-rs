@@ -11,11 +11,17 @@ use stylance::import_style;
 
 import_style!(style, "app.module.scss");
 
+pub const BASE_PATH: &str = if cfg!(debug_assertions) {
+    ""
+} else {
+    "/lunkvay-rs"
+};
+
 #[component]
 fn MainLayout() -> impl IntoView {
     let location = use_location();
     let navigate = use_navigate();
-    let navigation_is_active = move || !location.pathname.get().starts_with("/auth");
+    let navigation_is_active = move || !location.pathname.get().ends_with("/auth");
 
     Effect::new(move |_| {
         let pathname = location.pathname.get();
@@ -24,14 +30,14 @@ fn MainLayout() -> impl IntoView {
             .is_some();
 
         if token_is_present {
-            if pathname.starts_with("/auth") {
+            if pathname.ends_with("/auth") {
                 navigate("/profile", Default::default());
-            } else if pathname.starts_with("/logout") {
+            } else if pathname.ends_with("/logout") {
                 clear_token();
                 navigate("/auth", Default::default());
             }
         } else {
-            if !pathname.starts_with("/auth") {
+            if !pathname.ends_with("/auth") {
                 navigate("/auth", Default::default());
             }
         }
@@ -69,7 +75,7 @@ fn MainLayout() -> impl IntoView {
 #[component]
 pub fn App() -> impl IntoView {
     view! {
-        <Router>
+        <Router base=BASE_PATH>
             <MainLayout />
         </Router>
     }

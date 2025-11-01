@@ -1,4 +1,4 @@
-use crate::{config::API_BASE_URL, models::user::UserListItem};
+use crate::{app::BASE_PATH, config::API_BASE_URL, models::user::UserListItem};
 use leptos::{ev, prelude::*};
 use stylance::import_style;
 
@@ -16,9 +16,9 @@ pub fn FullFriendCard(friend: UserListItem) -> impl IntoView {
 
     view! {
         <div class=style::card>
-            <a href=format!("/profile/{}", friend.user_id) class=style::profile_link>
+            <a href=format!("{}/profile/{}", BASE_PATH, friend.user_id) class=style::profile_link>
                 <div class=style::avatar>
-                    <img src=avatar_url onerror="this.src='/images/userdefault.webp'"/>
+                    <img src=avatar_url onerror="src='/images/userdefault.webp'"/>
                     <Show when=move || friend.is_online.unwrap_or(false)>
                         <div class=style::online_indicator></div>
                     </Show>
