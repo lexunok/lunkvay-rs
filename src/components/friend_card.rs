@@ -18,7 +18,7 @@ pub fn FriendCard(friend: UserListItem) -> impl IntoView {
     view! {
         <div class=style::friend_card on:click=on_card_click>
             <div class=style::friend_avatar>
-                <img src=avatar_url alt="friend avatar" onerror="this.onerror=null;this.src='/public/images/userdefault.jpg';"/>
+                <img src=avatar_url onerror="src='/public/images/userdefault.jpg'"/>
                 <Show when=move || friend.is_online.unwrap_or(false)>
                     <div class=style::online_indicator></div>
                 </Show>
