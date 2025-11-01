@@ -1,20 +1,20 @@
-.friends-page {
+.friends_page {
   display: grid;
-  grid-template-columns: 0.66fr 0.34fr;
-  gap: 20px;
-  background-color: #303030;
+  grid-template-columns: 2fr 1fr;
+  gap: 30px;
+  background-color: #1a1a1a;
   padding: 20px;
-  height: 100%;
+  min-height: 100vh;
 
-  .main-content {
+  .main_content {
     background-color: #303030;
-    padding: 20px;
-    border-right: 1px solid #e2ddbd;
+    padding: 30px;
+    border-radius: 12px;
 
     .header {
-      padding-bottom: 20px;
-      border-bottom: 1px solid #e2ddbd;
-      margin-bottom: 20px;
+      padding-bottom: 15px;
+      margin-bottom: 25px;
+      border-bottom: 1px solid #444;
 
       .title {
         color: #e2ddbd;
@@ -23,24 +23,29 @@
       }
     }
 
-    .search-bar {
+    .search_bar {
       display: flex;
       gap: 10px;
-      padding-bottom: 20px;
-      border-bottom: 1px solid #e2ddbd;
-      margin-bottom: 20px;
+      margin-bottom: 25px;
 
       .search-input {
         flex-grow: 1;
         background-color: #2a2a2a;
         color: #e2ddbd;
-        border: none;
-        padding: 10px;
+        border: 1px solid #444;
+        padding: 12px;
         font-size: 16px;
-        border-radius: 5px;
+        border-radius: 8px;
+        transition: border-color 0.2s ease, box-shadow 0.2s ease;
 
         &::placeholder {
           color: #aaa;
+        }
+
+        &:focus {
+          outline: none;
+          border-color: #e2ddbd;
+          box-shadow: 0 0 0 3px rgba(226, 221, 189, 0.1);
         }
       }
 
@@ -48,10 +53,11 @@
         background-color: #e2ddbd;
         color: #1a1a1a;
         border: none;
-        padding: 10px 15px;
+        padding: 12px 20px;
         font-weight: bold;
-        border-radius: 5px;
+        border-radius: 8px;
         cursor: pointer;
+        transition: opacity 0.2s ease;
 
         &:hover {
           opacity: 0.9;
@@ -59,31 +65,31 @@
       }
     }
 
-    .friends-list {
+    .friends_list {
       display: flex;
       flex-direction: column;
-      gap: 10px;
+      gap: 15px;
     }
   }
 
   .sidebar {
-    background-color: #303030;
+    background-color: transparent;
     display: flex;
     flex-direction: column;
-    gap: 20px;
+    gap: 30px;
 
     .sidebar_card {
-      background-color: #2a2a2a;
-      padding: 20px;
-      border-radius: 8px;
+      background-color: #303030;
+      padding: 25px;
+      border-radius: 12px;
     }
 
     .sidebar_header {
       color: #e2ddbd;
       font-size: 20px;
       font-weight: bold;
-      margin-bottom: 15px;
-      padding-bottom: 15px;
+      margin-bottom: 20px;
+      padding-bottom: 20px;
       border-bottom: 1px solid #444;
     }
 

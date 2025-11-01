@@ -9,31 +9,33 @@ pub fn FullFriendCard(friend: UserListItem) -> impl IntoView {
     let avatar_url = format!("{}/avatar/{}", API_BASE_URL, friend.user_id);
 
     let on_message_click = move |ev: ev::MouseEvent| {
-        ev.stop_propagation();
-        // TODO: Navigate to chat with this user
+        ev.prevent_default();
     };
 
     let full_name = format!("{} {}", friend.first_name.clone().unwrap_or_default(), friend.last_name.clone().unwrap_or_default());
 
     view! {
-        <a href=format!{"/profile/{}", friend.user_id} class=style::card>
-            <div class=style::left>
+        <div class=style::card>
+            <a href=format!("/profile/{}", friend.user_id) class=style::profile_link>
                 <div class=style::avatar>
-                    <img src=avatar_url onerror="src='/images/userdefault.jpg'"/>
+                    <img src=avatar_url onerror="this.src='/images/userdefault.webp'"/>
                     <Show when=move || friend.is_online.unwrap_or(false)>
                         <div class=style::online_indicator></div>
                     </Show>
                 </div>
                 <div class=style::user_info>
                     <span class=style::full_name>{full_name}</span>
-                    <span class=style::status>"Offline"</span>
+                    <span
+                        class=style::status
+                        data-online=move || friend.is_online.unwrap_or(false).to_string()
+                    >
+                        {if friend.is_online.unwrap_or(false) { "Online" } else { "Offline" }}
+                    </span>
                 </div>
-            </div>
-            <div class=style::right>
-                <button class=style::message_button on:click=on_message_click>
-                    "Написать"
-                </button>
-            </div>
-        </a>
+            </a>
+            <button class=style::message_button on:click=on_message_click>
+                "Написать"
+            </button>
+        </div>
     }
 }

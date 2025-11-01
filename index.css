@@ -1,9 +1,11 @@
 html, body, #root {
+    @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;700&display=swap');
     height: 100%;
     margin: 0;
     padding: 0;
     background-color: #1A1A1A;
     color: #E2DDBD;
+    font-family: 'Montserrat', sans-serif;
 }
 
 .main_window-bb66a2d {
@@ -30,9 +32,9 @@ html, body, #root {
 
 
 .friend_card-79198a4 {
-    width: 110px;
-    height: 110px;
-    background-color: #3a3a3a;
+    width: 80px;
+    height: 80px;
+    background-color: #2a2a2a;
     border-radius: 8px;
     padding: 10px;
     display: flex;
@@ -45,7 +47,7 @@ html, body, #root {
     transition: background-color 0.2s ease, transform 0.1s ease;
 
     &:hover {
-        background-color: #4a4a4a;
+        background-color: #3a3a3a;
     }
 
     &:active {
@@ -82,27 +84,27 @@ html, body, #root {
     height: 12px;
     background-color: #4caf50;
     border-radius: 50%;
-    border: 2px solid #3a3a3a;
+    border: 2px solid #2a2a2a;
 }
 
 
-.friends-page-6a7b6a7 {
+.friends_page-6a7b6a7 {
   display: grid;
-  grid-template-columns: 0.66fr 0.34fr;
-  gap: 20px;
-  background-color: #303030;
+  grid-template-columns: 2fr 1fr;
+  gap: 30px;
+  background-color: #1a1a1a;
   padding: 20px;
-  height: 100%;
+  min-height: 100vh;
 
-  .main-content-6a7b6a7 {
+  .main_content-6a7b6a7 {
     background-color: #303030;
-    padding: 20px;
-    border-right: 1px solid #e2ddbd;
+    padding: 30px;
+    border-radius: 12px;
 
     .header-6a7b6a7 {
-      padding-bottom: 20px;
-      border-bottom: 1px solid #e2ddbd;
-      margin-bottom: 20px;
+      padding-bottom: 15px;
+      margin-bottom: 25px;
+      border-bottom: 1px solid #444;
 
       .title-6a7b6a7 {
         color: #e2ddbd;
@@ -111,24 +113,29 @@ html, body, #root {
       }
     }
 
-    .search-bar-6a7b6a7 {
+    .search_bar-6a7b6a7 {
       display: flex;
       gap: 10px;
-      padding-bottom: 20px;
-      border-bottom: 1px solid #e2ddbd;
-      margin-bottom: 20px;
+      margin-bottom: 25px;
 
       .search-input-6a7b6a7 {
         flex-grow: 1;
         background-color: #2a2a2a;
         color: #e2ddbd;
-        border: none;
-        padding: 10px;
+        border: 1px solid #444;
+        padding: 12px;
         font-size: 16px;
-        border-radius: 5px;
+        border-radius: 8px;
+        transition: border-color 0.2s ease, box-shadow 0.2s ease;
 
         &::placeholder {
           color: #aaa;
+        }
+
+        &:focus {
+          outline: none;
+          border-color: #e2ddbd;
+          box-shadow: 0 0 0 3px rgba(226, 221, 189, 0.1);
         }
       }
 
@@ -136,10 +143,11 @@ html, body, #root {
         background-color: #e2ddbd;
         color: #1a1a1a;
         border: none;
-        padding: 10px 15px;
+        padding: 12px 20px;
         font-weight: bold;
-        border-radius: 5px;
+        border-radius: 8px;
         cursor: pointer;
+        transition: opacity 0.2s ease;
 
         &:hover {
           opacity: 0.9;
@@ -147,31 +155,31 @@ html, body, #root {
       }
     }
 
-    .friends-list-6a7b6a7 {
+    .friends_list-6a7b6a7 {
       display: flex;
       flex-direction: column;
-      gap: 10px;
+      gap: 15px;
     }
   }
 
   .sidebar-6a7b6a7 {
-    background-color: #303030;
+    background-color: transparent;
     display: flex;
     flex-direction: column;
-    gap: 20px;
+    gap: 30px;
 
     .sidebar_card-6a7b6a7 {
-      background-color: #2a2a2a;
-      padding: 20px;
-      border-radius: 8px;
+      background-color: #303030;
+      padding: 25px;
+      border-radius: 12px;
     }
 
     .sidebar_header-6a7b6a7 {
       color: #e2ddbd;
       font-size: 20px;
       font-weight: bold;
-      margin-bottom: 15px;
-      padding-bottom: 15px;
+      margin-bottom: 20px;
+      padding-bottom: 20px;
       border-bottom: 1px solid #444;
     }
 
@@ -197,24 +205,30 @@ html, body, #root {
   padding: 15px;
   margin: 5px;
   background-color: #2a2a2a;
-  border-radius: 5px;
-  cursor: pointer;
-  transition: background-color 0.2s ease;
+  border-radius: 8px;
+  transition: background-color 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 
   &:hover {
     background-color: #3a3a3a;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
   }
 
-  .left-93eb935 {
+  .profile_link-93eb935 {
     display: flex;
     align-items: center;
     gap: 15px;
+    text-decoration: none;
+    color: inherit;
+    flex-grow: 1;
   }
 
   .avatar-93eb935 {
     position: relative;
     width: 60px;
     height: 60px;
+    flex-shrink: 0;
 
     img {
       width: 100%;
@@ -249,23 +263,27 @@ html, body, #root {
     .status-93eb935 {
       color: #aaaaaa;
       font-size: 14px;
+
+      &[data-online="true"] {
+        color: #4caf50;
+      }
     }
   }
 
-  .right-93eb935 {
-    .message_button-93eb935 {
-      background-color: transparent;
-      color: #e2ddbd;
-      border: 1px solid #e2ddbd;
-      padding: 10px 15px;
-      border-radius: 5px;
-      cursor: pointer;
-      transition: background-color 0.2s ease, color 0.2s ease;
+  .message_button-93eb935 {
+    background-color: transparent;
+    color: #e2ddbd;
+    border: 1px solid #e2ddbd;
+    padding: 10px 15px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: bold;
+    transition: background-color 0.2s ease, color 0.2s ease;
+    flex-shrink: 0;
 
-      &:hover {
-        background-color: #e2ddbd;
-        color: #1a1a1a;
-      }
+    &:hover {
+      background-color: #e2ddbd;
+      color: #1a1a1a;
     }
   }
 }
@@ -446,72 +464,99 @@ html, body, #root {
     left: 0;
     width: 100%;
     display: flex;
+    justify-content: space-between;
     align-items: center;
-    gap: 2rem;
-    padding: 1rem 2rem;
-    background-color: #303030;
-    color: #E2DDBD;
-    font-size: 24px;
+    padding: 0 5%;
+    height: 80px;
+    background-color: #1f1f1f;
+    border-bottom: 1px solid #333;
     box-sizing: border-box;
     z-index: 100;
+}
+
+.nav_left-18195bc, .nav_right-18195bc {
+    display: flex;
+    align-items: center;
+    gap: 2rem;
 }
 
 .nav_link-18195bc {
     background: none;
     border: none;
-    color: #E2DDBD;
+    color: #c7c5bf;
     cursor: pointer;
-    font-size: 24px;
+    font-size: 16px;
+    font-weight: 500;
     text-decoration: none;
+    padding: 8px 12px;
+    border-radius: 6px;
+    transition: background-color 0.2s ease, color 0.2s ease;
 
     &:hover {
-        color: rgba(226, 221, 189, 0.7);
+        background-color: #333;
+        color: #fff;
     }
 }
 
 .logo_link-18195bc {
-    background: none;
-    border: none;
     color: #E2DDBD;
-    cursor: pointer;
     text-decoration: none;
-    font-size: 48px;
+    font-size: 32px;
+    font-weight: 700;
 }
 
+.logout_button-18195bc {
+    background-color: transparent;
+    border: 1px solid #555;
+    color: #c7c5bf;
+    font-size: 16px;
+    font-weight: 500;
+    padding: 8px 16px;
+    border-radius: 6px;
+    cursor: pointer;
+    text-decoration: none;
+    transition: background-color 0.2s ease, color 0.2s ease, border-color 0.2s ease;
+
+    &:hover {
+        background-color: #e2ddbd;
+        color: #1a1a1a;
+        border-color: #e2ddbd;
+    }
+}
 
 .profile_page-bd9a733 {
     display: grid;
     grid-template-columns: 2fr 1fr;
-    gap: 20px;
+    gap: 30px;
     padding: 20px;
     color: #e2ddbd;
-    background-color: #303030;
-    min-height: calc(100vh - 80px);
+    background-color: #1a1a1a;
+    min-height: 100vh;
 }
 
 .main_content-bd9a733 {
     display: flex;
     flex-direction: column;
-    gap: 20px;
+    gap: 30px;
 }
 
 .profile_banner-bd9a733 {
-    height: 100px;
-    background-color: #2a2a2a;
-    border-radius: 8px;
+    height: 200px; 
+    background-color: #303030; 
+    border-radius: 12px;
     position: relative;
     overflow: hidden;
 }
 
 .user_info_card-bd9a733 {
-    background-color: #2a2a2a;
-    border-radius: 8px;
-    padding: 15px;
+    background-color: #303030;
+    border-radius: 12px;
+    padding: 30px; 
     display: flex;
     flex-direction: column;
     align-items: center;
     text-align: center;
-    margin-top: -120px;
+    margin-top: -200px; 
     position: relative;
     z-index: 1;
 
@@ -520,8 +565,8 @@ html, body, #root {
         height: 160px;
         border-radius: 50%;
         overflow: hidden;
-        border: 4px solid #303030;
-        margin-bottom: 10px;
+        border: 4px solid #1a1a1a;
+        margin-bottom: 15px;
 
         img {
             width: 100%;
@@ -545,18 +590,21 @@ html, body, #root {
 }
 
 .section_card-bd9a733 {
-    background-color: #2a2a2a;
-    border-radius: 8px;
-    padding: 20px;
+    background-color: #303030;
+    border-radius: 12px;
+    padding: 30px;
     display: flex;
     flex-direction: column;
     gap: 15px;
+    flex-grow: 1;
 
     h2 {
         font-size: 24px;
         font-weight: bold;
         color: #e2ddbd;
-        margin: 0;
+        margin: 0 0 10px 0;
+        padding-bottom: 15px;
+        border-bottom: 1px solid #444;
     }
 
     div {
@@ -565,27 +613,28 @@ html, body, #root {
         white-space: pre-wrap;
     }
 }
-
 .sidebar-bd9a733 {
     display: flex;
     flex-direction: column;
-    gap: 20px;
+    gap: 30px;
 }
 
-.friends_card-bd9a733 {
-    background-color: #2a2a2a;
-    border-radius: 8px;
-    padding: 20px;
+.friends_card-bd9a733, .actions_card-bd9a733 {
+    background-color: #303030; 
+    border-radius: 12px;
+    padding: 30px; 
     display: flex;
     flex-direction: column;
     gap: 15px;
+}
 
+.friends_card-bd9a733 {
     .friends_header-bd9a733 {
         display: flex;
         justify-content: space-between;
         align-items: center;
         padding-bottom: 15px;
-        border-bottom: 1px solid rgba(226, 221, 189, 0.2);
+        border-bottom: 1px solid #444;
 
         h2 {
             font-size: 22px;
@@ -602,8 +651,8 @@ html, body, #root {
 
     .friends_grid-bd9a733 {
         display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
-        gap: 15px;
+        grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
+        gap: 15px; 
         max-height: 300px;
         overflow-y: auto;
         padding-right: 5px;
@@ -611,23 +660,20 @@ html, body, #root {
 }
 
 .actions_card-bd9a733 {
-    background-color: #2a2a2a;
-    border-radius: 8px;
-    padding: 20px;
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-
     button {
         padding: 12px 15px;
         font-weight: bold;
         background-color: #e2ddbd;
         color: #1a1a1a;
         border: none;
-        border-radius: 5px;
+        border-radius: 8px;
         cursor: pointer;
         font-size: 16px;
         transition: all 0.2s ease;
+
+        &:hover {
+          opacity: 0.9;
+        }
 
         &:active {
             transform: scale(0.96);

@@ -43,7 +43,7 @@ pub fn ProfilePage() -> impl IntoView {
                             <div class=style::profile_banner></div>
                             <div class=style::user_info_card>
                                 <div class=style::avatar>
-                                    <img src=avatar_url onerror="src='/public/images/userdefault.jpg'"/>
+                                    <img src=avatar_url onerror="src='/public/images/userdefault.webp'"/>
                                 </div>
                                 <h1>
                                     {format!(

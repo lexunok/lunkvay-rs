@@ -5,24 +5,30 @@
   padding: 15px;
   margin: 5px;
   background-color: #2a2a2a;
-  border-radius: 5px;
-  cursor: pointer;
-  transition: background-color 0.2s ease;
+  border-radius: 8px;
+  transition: background-color 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 
   &:hover {
     background-color: #3a3a3a;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
   }
 
-  .left {
+  .profile_link {
     display: flex;
     align-items: center;
     gap: 15px;
+    text-decoration: none;
+    color: inherit;
+    flex-grow: 1;
   }
 
   .avatar {
     position: relative;
     width: 60px;
     height: 60px;
+    flex-shrink: 0;
 
     img {
       width: 100%;
@@ -57,23 +63,27 @@
     .status {
       color: #aaaaaa;
       font-size: 14px;
+
+      &[data-online="true"] {
+        color: #4caf50;
+      }
     }
   }
 
-  .right {
-    .message_button {
-      background-color: transparent;
-      color: #e2ddbd;
-      border: 1px solid #e2ddbd;
-      padding: 10px 15px;
-      border-radius: 5px;
-      cursor: pointer;
-      transition: background-color 0.2s ease, color 0.2s ease;
+  .message_button {
+    background-color: transparent;
+    color: #e2ddbd;
+    border: 1px solid #e2ddbd;
+    padding: 10px 15px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: bold;
+    transition: background-color 0.2s ease, color 0.2s ease;
+    flex-shrink: 0;
 
-      &:hover {
-        background-color: #e2ddbd;
-        color: #1a1a1a;
-      }
+    &:hover {
+      background-color: #e2ddbd;
+      color: #1a1a1a;
     }
   }
 }

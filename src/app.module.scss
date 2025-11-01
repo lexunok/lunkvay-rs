@@ -1,9 +1,11 @@
 :global(html, body, #root) {
+    @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;700&display=swap');
     height: 100%;
     margin: 0;
     padding: 0;
     background-color: #1A1A1A;
     color: #E2DDBD;
+    font-family: 'Montserrat', sans-serif;
 }
 
 .main_window {
