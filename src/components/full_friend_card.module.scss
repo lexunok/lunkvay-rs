@@ -59,15 +59,6 @@
       font-size: 18px;
       font-weight: bold;
     }
-
-    .status {
-      color: #aaaaaa;
-      font-size: 14px;
-
-      &[data-online="true"] {
-        color: #4caf50;
-      }
-    }
   }
 
   .message_button {

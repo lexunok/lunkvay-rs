@@ -1,6 +1,10 @@
-use crate::{api, api::error::ApiError, components::{friend_card::FriendCard, spinner::Spinner}, config::API_BASE_URL, utils::{clear_token, get_current_user_id}};
+use crate::{
+    api,
+    components::{friend_card::FriendCard, spinner::Spinner},
+    utils::{API_BASE_URL, get_current_user_id},
+};
 use leptos::prelude::*;
-use leptos_router::{hooks::{use_navigate, use_params}, params::Params};
+use leptos_router::{hooks::use_params, params::Params};
 use stylance::import_style;
 
 import_style!(style, "profile.module.scss");
@@ -12,7 +16,6 @@ struct ProfileParams {
 
 #[component]
 pub fn ProfilePage() -> impl IntoView {
-    let navigate = use_navigate();
     let params = use_params::<ProfileParams>();
 
     let profile_resource = LocalResource::new(move || {
@@ -43,22 +46,22 @@ pub fn ProfilePage() -> impl IntoView {
                             <div class=style::profile_banner></div>
                             <div class=style::user_info_card>
                                 <div class=style::avatar>
-                                    <img src=avatar_url onerror="src='/public/images/userdefault.webp'"/>
+                                    <img src=avatar_url onerror="this.onerror=null;this.src='/images/userdefault.webp';"/>
                                 </div>
                                 <h1>
                                     {format!(
                                         "{} {}",
-                                        profile.user.first_name.clone().unwrap_or_default(),
-                                        profile.user.last_name.clone().unwrap_or_default()
+                                        profile.user.first_name.unwrap_or_default(),
+                                        profile.user.last_name.unwrap_or_default()
                                     )}
                                 </h1>
                                 <p class=style::status>
-                                    {profile.status.clone().unwrap_or_default()}
+                                    {profile.status.unwrap_or_default()}
                                 </p>
                             </div>
                             <div class=style::section_card>
                                 <h2>"О себе"</h2>
-                                <div>{profile.about.clone().unwrap_or_default()}</div>
+                                <div>{profile.about.unwrap_or_default()}</div>
                             </div>
                         </div>
                         <aside class=style::sidebar>
@@ -71,13 +74,13 @@ pub fn ProfilePage() -> impl IntoView {
                                     <For
                                         each=move || profile.friends.clone().unwrap_or_default()
                                         key=|friend| friend.user_id
-                                        children=move |friend| {
-                                            view! { <FriendCard friend=friend/> }
-                                        }
-                                    />
+                                        let(friend)
+                                    >
+                                        <FriendCard friend=friend/>
+                                    </For>
                                 </div>
                             </div>
-                            <Show when=move || is_current_user>
+                            <Show when=move ||is_current_user>
                                 <div class=style::actions_card>
                                     <button>"Редактировать профиль"</button>
                                     <button class=style::secondary_button>"Настройки"</button>
@@ -88,12 +91,7 @@ pub fn ProfilePage() -> impl IntoView {
                 }.into_any()
             }
             Err(e) => {
-                if let ApiError::Unauthorized = e {
-                    clear_token();
-                    navigate("/auth", Default::default());
-                    return view! { <div/> }.into_any(); 
-                }
-                view! { <p class=style::error_message>{format!("Ошибка загрузки профиля: {}", e)}</p> }.into_any()
+                view! { <p class=style::error_message>{e.to_string()}</p> }.into_any()
             }
         })
     };

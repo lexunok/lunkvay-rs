@@ -10,16 +10,14 @@ import_style!(style, "friends.module.scss");
 
 #[component]
 pub fn FriendsPage() -> impl IntoView {
-    let friends_resource = LocalResource::new(
-        async move || {
-            let mut friends = Vec::new();
+    let friends_resource = LocalResource::new(async move || {
+        let mut friends = Vec::new();
 
-            if let Some(id) = get_current_user_id() {
-                friends = api::friends::get_user_friends(id).await.unwrap_or_default();
-            }
-            friends
-        },
-    );
+        if let Some(id) = get_current_user_id() {
+            friends = api::friends::get_user_friends(id).await.unwrap_or_default();
+        }
+        friends
+    });
 
     let friends_view = move || {
         friends_resource.get().map(|friends| {

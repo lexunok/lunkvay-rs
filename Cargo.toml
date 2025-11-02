@@ -16,3 +16,4 @@ web-sys = { version = "0.3.81", features = ["Window", "Storage"]}
 stylance = "0.7.1"
 uuid = { version = "1.8.0", features = ["serde", "v4", "js"] }
 jsonwebtoken = "9.3.0"
+chrono = { version = "0.4.38", features = ["serde"] }

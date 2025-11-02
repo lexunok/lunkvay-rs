@@ -11,8 +11,8 @@ import_style!(style, "login.module.scss");
 
 #[component]
 pub fn LoginPage() -> impl IntoView {
-    let (is_register_mode, set_is_register_mode) = signal(false);
-    let (error, set_error) = signal(Option::<String>::None);
+    let (is_register_mode, set_is_register_mode) = signal_local(false);
+    let (error, set_error) = signal_local(None::<String>);
 
     let first_name = RwSignal::new(String::new());
     let last_name = RwSignal::new(String::new());
@@ -23,35 +23,33 @@ pub fn LoginPage() -> impl IntoView {
     let navigate = use_navigate();
 
     let login_action = Action::new_local(|(email, password): &(String, String)| {
-        let email = email.clone();
-        let password = password.clone();
+        let (email, password) = (email.clone(), password.clone());
         async move {
-            let creds = LoginRequest {
-                email: email,
-                password: password,
-            };
-            api::auth::login(creds).await.map_err(|e| e.to_string())
+            api::auth::login(LoginRequest { email, password })
+                .await
+                .map_err(|e| e.to_string())
         }
     });
 
     let register_action = Action::new_local(
-        |(first_name, last_name, user_name, email, password): &(String, String, String, String, String)| {
-            let first_name = first_name.clone();
-            let last_name = last_name.clone();
-            let user_name = user_name.clone();
-            let email = email.clone();
-            let password = password.clone();
+        |(first, last, user, email, pass): &(String, String, String, String, String)| {
+            let (first_name, last_name, user_name, email, password) = (
+                first.clone(),
+                last.clone(),
+                user.clone(),
+                email.clone(),
+                pass.clone(),
+            );
             async move {
-                let details = RegisterRequest {
-                    first_name: first_name,
-                    last_name: last_name,
-                    user_name: user_name,
-                    email: email,
-                    password: password,
-                };
-                api::auth::register(details)
-                    .await
-                    .map_err(|e| e.to_string())
+                api::auth::register(RegisterRequest {
+                    first_name,
+                    last_name,
+                    user_name,
+                    email,
+                    password,
+                })
+                .await
+                .map_err(|e| e.to_string())
             }
         },
     );
@@ -67,7 +65,7 @@ pub fn LoginPage() -> impl IntoView {
                     navigate("/profile", Default::default());
                 }
                 Err(e) => {
-                    set_error.set(Some(format!("Ошибка входа: {}", e)));
+                    set_error.set(Some(e));
                 }
             }
         }
@@ -81,7 +79,7 @@ pub fn LoginPage() -> impl IntoView {
                     set_is_register_mode.set(false);
                 }
                 Err(e) => {
-                    set_error.set(Some(format!("Ошибка регистрации: {}", e)));
+                    set_error.set(Some(e));
                 }
             }
         }
@@ -98,11 +96,9 @@ pub fn LoginPage() -> impl IntoView {
 
     let on_register_submit = move |ev: ev::SubmitEvent| {
         ev.prevent_default();
-        if first_name.get().is_empty()
-            || last_name.get().is_empty()
-            || user_name.get().is_empty()
-            || email.get().is_empty()
-            || password.get().is_empty()
+        if [first_name, last_name, user_name, email, password]
+            .iter()
+            .any(|v| v.get().is_empty())
         {
             set_error.set(Some("Все поля обязательны для заполнения.".to_string()));
             return;

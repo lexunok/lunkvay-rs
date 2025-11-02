@@ -7,5 +7,7 @@ pub async fn login(creds: LoginRequest) -> Result<String, ApiError> {
 }
 
 pub async fn register(details: RegisterRequest) -> Result<(), ApiError> {
-    ApiClient::post("/auth/register", &details).send_empty().await
+    ApiClient::post("/auth/register", &details)
+        .send_empty()
+        .await
 }

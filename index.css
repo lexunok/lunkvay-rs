@@ -31,7 +31,263 @@ html, body, #root {
 }
 
 
+.container-70b5c55 {
+    display: grid;
+    grid-template-columns: 400px 1fr;
+    gap: 30px;
+    padding: 20px;
+    background-color: #1a1a1a;
+    min-height: 100vh;
+    color: #e2ddbd;
+}
+
+.left_panel-70b5c55, .right_panel-70b5c55 {
+    background-color: #303030;
+    border-radius: 12px;
+    padding: 30px;
+    display: flex;
+    flex-direction: column;
+    gap: 25px;
+}
+
+.header-70b5c55 {
+    padding-bottom: 15px;
+    border-bottom: 1px solid #444;
+    .title-70b5c55 {
+        font-size: 24px;
+        font-weight: bold;
+    }
+}
+
+.search_bar-70b5c55 {
+    position: relative;
+    .search_icon-70b5c55 {
+        position: absolute;
+        left: 12px;
+        top: 50%;
+        transform: translateY(-50%);
+        color: #aaa;
+    }
+    input {
+        display: block;
+            width: 90%;
+            background-color: #2a2a2a;
+            color: #e2ddbd;
+            margin: 0 auto;
+            border: 1px solid #444;
+            padding: 12px;
+            font-size: 16px;
+            border-radius: 8px;
+            transition: border-color 0.2s ease, box-shadow 0.2s ease;
+            &::placeholder { color: #aaa; }
+            &:focus {
+                outline: none;
+                border-color: #e2ddbd;
+                box-shadow: 0 0 0 3px rgba(226, 221, 189, 0.1);
+            }
+    }
+}
+
+.chat_list-70b5c55 {
+    flex-grow: 1;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin: 0 -15px;
+    padding: 0 15px;
+}
+
+.chat_list_item-70b5c55 {
+    display: flex;
+    padding: 15px;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+
+    &:hover {
+        background-color: #3a3a3a;
+    }
+
+    &.active-70b5c55 {
+        background-color: #4a6572;
+    }
+}
+
+.avatar-70b5c55 {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    margin-right: 15px;
+    object-fit: cover;
+}
+
+.chat_info-70b5c55 {
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    overflow: hidden;
+}
+
+.chat_name-70b5c55 {
+    font-weight: bold;
+    font-size: 16px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.last_message-70b5c55 {
+    color: #aaa;
+    font-size: 14px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.chat_meta-70b5c55 {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    font-size: 12px;
+    color: #aaa;
+}
+
+.unread_count-70b5c55 {
+    background-color: #e2ddbd;
+    color: #1a1a1a;
+    border-radius: 50%;
+    min-width: 20px;
+    height: 20px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 12px;
+    font-weight: bold;
+    margin-top: 5px;
+    padding: 2px;
+}
+
+.chat_header-70b5c55 {
+    display: flex;
+    align-items: center;
+    padding-bottom: 15px;
+    border-bottom: 1px solid #444;
+
+    .avatar-70b5c55 { width: 40px; height: 40px; }
+    .chat_name-70b5c55 { flex-grow: 1; font-size: 20px; font-weight: bold; }
+}
+
+.messages_area-70b5c55 {
+    flex-grow: 1;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.message_content-70b5c55 {
+    padding: 10px 15px;
+    border-radius: 12px;
+    max-width: 75%;
+    position: relative;
+    font-size: 16px;
+
+    p { margin: 0 0 20px 0; line-height: 1.5; }
+
+    .time_and_status-70b5c55 {
+        position: absolute;
+        bottom: 8px;
+        right: 15px;
+        display: flex;
+        align-items: center;
+        gap: 5px;
+        font-size: 12px;
+        color: #c0c0c0;
+    }
+}
+
+.my_message-70b5c55 {
+    align-self: flex-end;
+    .message_content-70b5c55 {
+        background-color: #4A6572;
+        border-radius: 12px 12px 0 12px;
+    }
+}
+
+.other_message-70b5c55 {
+    align-self: flex-start;
+    .message_content-70b5c55 {
+        background-color: #3a3a3a;
+        border-radius: 12px 12px 12px 0;
+        .time_and_status-70b5c55 { right: auto; left: 15px; }
+    }
+}
+
+.system_message-70b5c55 {
+    align-self: center;
+    color: #aaa;
+    font-style: italic;
+    font-size: 14px;
+}
+
+.message_input_area-70b5c55 {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    padding-top: 20px;
+    border-top: 1px solid #444;
+
+    input {
+        flex-grow: 1;
+        background-color: #2a2a2a;
+        color: #e2ddbd;
+        border: 1px solid #444;
+        padding: 12px;
+        font-size: 16px;
+        border-radius: 8px;
+        transition: border-color 0.2s ease, box-shadow 0.2s ease;
+        &::placeholder { color: #aaa; }
+        &:focus {
+            outline: none;
+            border-color: #e2ddbd;
+            box-shadow: 0 0 0 3px rgba(226, 221, 189, 0.1);
+        }
+    }
+
+    .icon_button-70b5c55 {
+        background-color: transparent;
+        color: #aaa;
+        border: none;
+        padding: 10px;
+        border-radius: 50%;
+        cursor: pointer;
+        font-size: 20px;
+        width: 44px;
+        height: 44px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: background-color 0.2s ease, color 0.2s ease;
+        &:hover {
+            background-color: #2a2a2a;
+            color: #e2ddbd;
+        }
+    }
+
+    .send_button-70b5c55 {
+        background-color: #e2ddbd;
+        color: #2a2a2a;
+        font-weight: bold;
+        font-size: 20px;
+    }
+}
+
+
 .friend_card-79198a4 {
+    color: inherit;
+    text-decoration: none;
     width: 80px;
     height: 80px;
     background-color: #2a2a2a;
@@ -176,10 +432,10 @@ html, body, #root {
 
     .sidebar_header-6a7b6a7 {
       color: #e2ddbd;
-      font-size: 20px;
+      font-size: 16px;
       font-weight: bold;
-      margin-bottom: 20px;
-      padding-bottom: 20px;
+      margin-bottom: 12px;
+      padding-bottom: 12px;
       border-bottom: 1px solid #444;
     }
 
@@ -187,6 +443,7 @@ html, body, #root {
       color: #aaa;
       text-align: center;
       padding-top: 10px;
+      font-size: 16px;
     }
   }
 }
@@ -197,6 +454,7 @@ html, body, #root {
     width: 100%;
     height: 80vh;
 }
+
 
 .card-93eb935 {
   display: flex;
@@ -258,15 +516,6 @@ html, body, #root {
       color: #e2ddbd;
       font-size: 18px;
       font-weight: bold;
-    }
-
-    .status-93eb935 {
-      color: #aaaaaa;
-      font-size: 14px;
-
-      &[data-online="true"] {
-        color: #4caf50;
-      }
     }
   }
 
@@ -523,6 +772,7 @@ html, body, #root {
         border-color: #e2ddbd;
     }
 }
+
 
 .profile_page-bd9a733 {
     display: grid;

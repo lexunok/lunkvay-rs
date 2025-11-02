@@ -1,6 +1,6 @@
-use thiserror::Error;
 use leptos_router::params::ParamsError;
 use reqwasm::http::Response;
+use thiserror::Error;
 
 #[derive(Error, Debug, Clone, PartialEq)]
 pub enum ApiError {

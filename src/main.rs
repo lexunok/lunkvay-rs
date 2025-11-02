@@ -1,7 +1,6 @@
 mod api;
 mod app;
 mod components;
-mod config;
 mod models;
 mod pages;
 mod utils;
