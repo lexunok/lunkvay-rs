@@ -15,19 +15,38 @@ struct ProfileParams {
     id: Option<Uuid>,
 }
 
+use crate::api::profile::UpdateProfileRequest;
+use leptos::ev::SubmitEvent;
+
 #[component]
 pub fn ProfilePage() -> impl IntoView {
     let params = use_params::<ProfileParams>();
+    let (show_modal, set_show_modal) = signal(false);
+
+    let update_profile_action = Action::new_local(|req: &UpdateProfileRequest| {
+        let req = req.clone();
+        async move {
+            api::profile::update_profile(req)
+                .await
+                .map_err(|e| e.to_string())
+        }
+    });
 
     let profile_resource = LocalResource::new(move || {
-        let params_result = params.get();
+        let params = params.get();
         async move {
-            let params = params_result?;
+            let params = params?;
             if let Some(user_id) = params.id {
                 api::profile::get_user_profile(user_id).await
             } else {
                 api::profile::get_current_user_profile().await
             }
+        }
+    });
+
+    Effect::new(move |_| {
+        if update_profile_action.version().get() > 0 {
+            profile_resource.refetch();
         }
     });
 
@@ -40,6 +59,19 @@ pub fn ProfilePage() -> impl IntoView {
                     profile.user.id
                 );
                 let is_current_user = get_current_user_id().map_or(false, |id| id == profile.user.id);
+
+                let new_status = RwSignal::new(profile.status.clone().unwrap_or_default());
+                let new_about = RwSignal::new(profile.about.clone().unwrap_or_default());
+
+                let on_submit = move |ev: SubmitEvent| {
+                    ev.prevent_default();
+                    let request = UpdateProfileRequest {
+                        new_status: Some(new_status.get()),
+                        new_about: Some(new_about.get()),
+                    };
+                    update_profile_action.dispatch(request);
+                    set_show_modal.set(false);
+                };
 
                 view! {
                     <div class=style::profile_page>
@@ -57,12 +89,12 @@ pub fn ProfilePage() -> impl IntoView {
                                     )}
                                 </h1>
                                 <p class=style::status>
-                                    {profile.status.unwrap_or_default()}
+                                    {profile.status.clone().unwrap_or_default()}
                                 </p>
                             </div>
                             <div class=style::section_card>
                                 <h2>"О себе"</h2>
-                                <div>{profile.about.unwrap_or_default()}</div>
+                                <div>{profile.about.clone().unwrap_or_default()}</div>
                             </div>
                         </div>
                         <aside class=style::sidebar>
@@ -75,19 +107,47 @@ pub fn ProfilePage() -> impl IntoView {
                                     <For
                                         each=move || profile.friends.clone()
                                         key=|friend| friend.user_id
-                                        let(friend)
-                                    >
-                                        <FriendCard friend=friend/>
-                                    </For>
+                                        children=move |friend| view! { <FriendCard friend=friend/> }
+                                    />
                                 </div>
                             </div>
-                            <Show when=move ||is_current_user>
+                            <Show when=move || is_current_user>
                                 <div class=style::actions_card>
-                                    <button>"Редактировать профиль"</button>
+                                    <button on:click=move |_| set_show_modal.set(true)>"Редактировать профиль"</button>
                                     <button class=style::secondary_button>"Настройки"</button>
                                 </div>
                             </Show>
                         </aside>
+
+                        <Show when=move || show_modal.get()>
+                            <div class=style::modal_backdrop on:click=move |_| set_show_modal.set(false)>
+                                <div class=style::modal_content on:click=|e| e.stop_propagation()>
+                                    <h2>"Редактировать профиль"</h2>
+                                    <form on:submit=on_submit>
+                                        <div class=style::form_field>
+                                            <label for="status">"Статус"</label>
+                                            <input
+                                                type="text"
+                                                id="status"
+                                                bind:value=new_status
+                                            />
+                                        </div>
+                                        <div class=style::form_field>
+                                            <label for="about">"О себе"</label>
+                                            <textarea
+                                                id="about"
+                                                bind:value=new_about
+                                                rows="5"
+                                            ></textarea>
+                                        </div>
+                                        <div class=style::form_actions>
+                                            <button type="submit">"Сохранить"</button>
+                                            <button type="button" class=style::modal_cancel_button on:click=move |_| set_show_modal.set(false)>"Отмена"</button>
+                                        </div>
+                                    </form>
+                                </div>
+                            </div>
+                        </Show>
                     </div>
                 }.into_any()
             }

@@ -731,14 +731,6 @@ html, body, #root {
 }
 
 
-.no_chat_selected-68e49c4 {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    height: 100%;
-    color: #aaa;
-    font-size: 20px;
-}
 
 .chat_header-68e49c4 {
     display: flex;
@@ -991,8 +983,8 @@ html, body, #root {
 }
 
 .profile_banner-bd9a733 {
-    height: 200px; 
-    background-color: #303030; 
+    height: 200px;
+    background-color: #303030;
     border-radius: 12px;
     position: relative;
     overflow: hidden;
@@ -1001,12 +993,12 @@ html, body, #root {
 .user_info_card-bd9a733 {
     background-color: #303030;
     border-radius: 12px;
-    padding: 30px; 
+    padding: 30px;
     display: flex;
     flex-direction: column;
     align-items: center;
     text-align: center;
-    margin-top: -200px; 
+    margin-top: -200px;
     position: relative;
     z-index: 1;
 
@@ -1070,9 +1062,9 @@ html, body, #root {
 }
 
 .friends_card-bd9a733, .actions_card-bd9a733 {
-    background-color: #303030; 
+    background-color: #303030;
     border-radius: 12px;
-    padding: 30px; 
+    padding: 30px;
     display: flex;
     flex-direction: column;
     gap: 15px;
@@ -1102,7 +1094,7 @@ html, body, #root {
     .friends_grid-bd9a733 {
         display: grid;
         grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
-        gap: 15px; 
+        gap: 15px;
         max-height: 300px;
         overflow-y: auto;
         padding-right: 5px;
@@ -1154,6 +1146,124 @@ html, body, #root {
     align-items: center;
     width: 100%;
     height: 80vh;
+}
+
+.modal_cancel_button-bd9a733 {
+    padding: 12px 20px;
+    font-weight: bold;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 16px;
+    transition: all 0.2s ease;
+    background-color: transparent;
+    color: #e2ddbd;
+    border: 1px solid #444;
+
+    &:hover {
+        background-color: #444;
+    }
+
+    &:active {
+        transform: scale(0.96);
+    }
+}
+
+.form_field-bd9a733 {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-top: 20px;
+}
+
+.form_field-bd9a733 label {
+    font-size: 16px;
+    font-weight: bold;
+    color: #aaa;
+}
+
+.form_field-bd9a733 input,
+.form_field-bd9a733 textarea {
+    background-color: #2a2a2a;
+    color: #e2ddbd;
+    border: 1px solid #444;
+    padding: 12px;
+    font-size: 16px;
+    border-radius: 8px;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+    resize: vertical;
+    font-family: inherit;
+}
+
+.form_field-bd9a733 input:focus,
+.form_field-bd9a733 textarea:focus {
+    outline: none;
+    border-color: #e2ddbd;
+    box-shadow: 0 0 0 3px rgba(226, 221, 189, 0.1);
+}
+
+.form_actions-bd9a733 {
+    display: flex;
+    gap: 15px;
+    justify-content: flex-end;
+    padding-top: 20px;
+    margin-top: 10px;
+    border-top: 1px solid #444;
+}
+
+.form_actions-bd9a733 button {
+    padding: 12px 20px;
+    font-weight: bold;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 16px;
+    transition: all 0.2s ease;
+}
+
+.form_actions-bd9a733 button:hover {
+    opacity: 0.9;
+}
+
+.form_actions-bd9a733 button:active {
+    transform: scale(0.96);
+}
+
+.form_actions-bd9a733 button[type="submit"] {
+    background-color: #e2ddbd;
+    color: #1a1a1a;
+}
+
+
+.modal_backdrop-bd9a733 {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.7);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+}
+
+.modal_content-bd9a733 {
+    background-color: #303030;
+    padding: 30px;
+    border-radius: 12px;
+    width: 100%;
+    max-width: 500px;
+    display: flex;
+    flex-direction: column;
+
+    h2 {
+        font-size: 22px;
+        font-weight: bold;
+        color: #e2ddbd;
+        margin: 0;
+        padding-bottom: 20px;
+        border-bottom: 1px solid #444;
+    }
 }
 
 
