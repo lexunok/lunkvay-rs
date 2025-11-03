@@ -7,7 +7,7 @@ import_style!(style, "friend_card.module.scss");
 #[component]
 pub fn FriendCard(friend: UserListItem) -> impl IntoView {
     let avatar_url = format!("{}/avatar/{}", API_BASE_URL, friend.user_id);
-    let is_online = move || friend.is_online.unwrap_or(false);
+    let is_online = move || friend.is_online;
 
     view! {
         <A href=format!("./{}", friend.user_id) attr:class=style::friend_card>
@@ -18,7 +18,7 @@ pub fn FriendCard(friend: UserListItem) -> impl IntoView {
                 </Show>
             </div>
             <span>
-                {friend.first_name.unwrap_or_default()}
+                {friend.first_name}
             </span>
         </A>
     }

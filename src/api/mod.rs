@@ -1,6 +1,10 @@
 pub mod auth;
 pub mod base;
 pub mod chat;
+pub mod chat_members;
+pub mod chat_messages;
 pub mod error;
 pub mod friends;
+pub mod image;
 pub mod profile;
+pub mod user;

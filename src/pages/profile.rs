@@ -6,12 +6,13 @@ use crate::{
 use leptos::prelude::*;
 use leptos_router::{hooks::use_params, params::Params};
 use stylance::import_style;
+use uuid::Uuid;
 
 import_style!(style, "profile.module.scss");
 
 #[derive(Params, PartialEq, Clone, Debug)]
 struct ProfileParams {
-    id: Option<String>,
+    id: Option<Uuid>,
 }
 
 #[component]
@@ -51,8 +52,8 @@ pub fn ProfilePage() -> impl IntoView {
                                 <h1>
                                     {format!(
                                         "{} {}",
-                                        profile.user.first_name.unwrap_or_default(),
-                                        profile.user.last_name.unwrap_or_default()
+                                        profile.user.first_name,
+                                        profile.user.last_name
                                     )}
                                 </h1>
                                 <p class=style::status>
@@ -68,11 +69,11 @@ pub fn ProfilePage() -> impl IntoView {
                             <div class=style::friends_card>
                                 <div class=style::friends_header>
                                     <h2>"Друзья"</h2>
-                                    <span>{profile.friends_count.unwrap_or(0)}</span>
+                                    <span>{profile.friends_count}</span>
                                 </div>
                                 <div class=style::friends_grid>
                                     <For
-                                        each=move || profile.friends.clone().unwrap_or_default()
+                                        each=move || profile.friends.clone()
                                         key=|friend| friend.user_id
                                         let(friend)
                                     >

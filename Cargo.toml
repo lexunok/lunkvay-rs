@@ -17,3 +17,4 @@ stylance = "0.7.1"
 uuid = { version = "1.8.0", features = ["serde", "v4", "js"] }
 jsonwebtoken = "9.3.0"
 chrono = { version = "0.4.38", features = ["serde"] }
+serde_repr = "0.1.20"

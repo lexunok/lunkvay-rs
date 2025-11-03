@@ -9,9 +9,9 @@ pub struct LoginRequest {
 #[derive(Serialize, Clone, Debug)]
 #[serde(rename_all = "camelCase")]
 pub struct RegisterRequest {
+    pub email: String,
+    pub user_name: String,
+    pub password: String,
     pub first_name: String,
     pub last_name: String,
-    pub user_name: String,
-    pub email: String,
-    pub password: String,
 }

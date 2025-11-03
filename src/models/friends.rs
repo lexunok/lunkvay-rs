@@ -1,24 +1,27 @@
-use chrono::NaiveDateTime;
 use serde::{Deserialize, Serialize};
 use uuid::Uuid;
 
 #[derive(Clone, Debug, PartialEq, Deserialize, Serialize)]
-#[serde(rename_all = "camelCase")]
-pub struct User {
-    pub id: Uuid,
-    pub user_name: String,
-    pub email: String,
-    pub first_name: String,
-    pub last_name: String,
-    pub created_at: NaiveDateTime,
-    pub is_deleted: bool,
-    pub last_login: NaiveDateTime,
-    pub is_online: bool,
+pub enum FriendshipStatus {
+    Pending,
+    Accepted,
+    Rejected,
+    Cancelled,
 }
 
 #[derive(Clone, Debug, PartialEq, Deserialize, Serialize)]
 #[serde(rename_all = "camelCase")]
-pub struct UserListItem {
+pub struct FriendshipLabel {
+    pub id: Uuid,
+    pub label: String,
+}
+
+#[derive(Clone, Debug, PartialEq, Deserialize, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct Friendship {
+    pub friendship_id: Uuid,
+    pub status: Option<FriendshipStatus>,
+    pub labels: Option<Vec<FriendshipLabel>>,
     pub user_id: Uuid,
     pub first_name: String,
     pub last_name: String,

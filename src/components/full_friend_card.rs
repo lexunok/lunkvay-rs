@@ -1,19 +1,15 @@
-use crate::{models::user::UserListItem, utils::API_BASE_URL};
+use crate::{models::friends::Friendship, utils::API_BASE_URL};
 use leptos::prelude::*;
 use leptos_router::components::A;
 use stylance::import_style;
 import_style!(style, "full_friend_card.module.scss");
 
 #[component]
-pub fn FullFriendCard(friend: UserListItem) -> impl IntoView {
+pub fn FullFriendCard(friend: Friendship) -> impl IntoView {
     let avatar_url = format!("{}/avatar/{}", API_BASE_URL, friend.user_id);
 
-    let full_name = format!(
-        "{} {}",
-        friend.first_name.clone().unwrap_or_default(),
-        friend.last_name.clone().unwrap_or_default()
-    );
-    let is_online = move || friend.is_online.unwrap_or(false);
+    let full_name = format!("{} {}", friend.first_name.clone(), friend.last_name.clone());
+    let is_online = move || friend.is_online;
 
     view! {
         <div class=style::card>

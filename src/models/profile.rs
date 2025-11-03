@@ -4,11 +4,11 @@ use uuid::Uuid;
 
 #[derive(Clone, Debug, PartialEq, Deserialize, Serialize)]
 #[serde(rename_all = "camelCase")]
-pub struct UserProfile {
+pub struct Profile {
     pub id: Uuid,
     pub user: User,
     pub status: Option<String>,
     pub about: Option<String>,
-    pub friends_count: Option<i32>,
-    pub friends: Option<Vec<UserListItem>>,
+    pub friends_count: i32,
+    pub friends: Vec<UserListItem>,
 }

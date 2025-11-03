@@ -13,6 +13,22 @@ impl ApiClient {
     pub fn post<'a, B: Serialize>(path: &'a str, body: &'a B) -> RequestBuilder<'a, B> {
         RequestBuilder::new(Method::POST, path, Some(body))
     }
+
+    // pub fn post_form_data<'a>(path: &'a str, body: FormData) -> RequestBuilderFormData<'a> {
+    //     RequestBuilderFormData::new(Method::POST, path, body)
+    // }
+
+    pub fn delete<'a>(path: &'a str) -> RequestBuilder<'a, ()> {
+        RequestBuilder::new(Method::DELETE, path, None)
+    }
+
+    pub fn delete_with_body<'a, B: Serialize>(path: &'a str, body: &'a B) -> RequestBuilder<'a, B> {
+        RequestBuilder::new(Method::DELETE, path, Some(body))
+    }
+
+    pub fn patch<'a, B: Serialize>(path: &'a str, body: &'a B) -> RequestBuilder<'a, B> {
+        RequestBuilder::new(Method::PATCH, path, Some(body))
+    }
 }
 
 pub struct RequestBuilder<'a, B: Serialize> {

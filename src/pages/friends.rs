@@ -14,7 +14,9 @@ pub fn FriendsPage() -> impl IntoView {
         let mut friends = Vec::new();
 
         if let Some(id) = get_current_user_id() {
-            friends = api::friends::get_user_friends(id).await.unwrap_or_default();
+            friends = api::friends::get_user_friends(id, None, None)
+                .await
+                .unwrap_or_default();
         }
         friends
     });
