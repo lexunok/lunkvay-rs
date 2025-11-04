@@ -42,9 +42,9 @@ pub async fn delete_avatar() -> Result<String, ApiError> {
         .send_text()
         .await
 }
-pub async fn delete_chat_image(chat_id: Uuid) -> Result<String, ApiError> {
-    ApiClient::delete(&format!("/chat-image/{}", chat_id))
-        .authenticated()
-        .send_text()
-        .await
-}
+// pub async fn delete_chat_image(chat_id: Uuid) -> Result<String, ApiError> {
+//     ApiClient::delete(&format!("/chat-image/{}", chat_id))
+//         .authenticated()
+//         .send_text()
+//         .await
+// }

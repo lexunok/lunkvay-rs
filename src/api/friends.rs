@@ -17,14 +17,24 @@ pub struct CreateFriendshipLabelRequest {
     pub label: String,
 }
 
-pub async fn get_user_friends(
-    user_id: Uuid,
+// pub async fn get_user_friends(
+//     user_id: Uuid,
+//     page: Option<u32>,
+//     page_size: Option<u32>,
+// ) -> Result<Vec<Friendship>, ApiError> {
+//     let page = page.unwrap_or(1);
+//     let page_size = page_size.unwrap_or(16);
+//     let path = format!("/friends/{}?page={}&pageSize={}", user_id, page, page_size);
+//     ApiClient::get(&path).authenticated().send_json().await
+// }
+
+pub async fn get_friends(
     page: Option<u32>,
     page_size: Option<u32>,
 ) -> Result<Vec<Friendship>, ApiError> {
     let page = page.unwrap_or(1);
     let page_size = page_size.unwrap_or(16);
-    let path = format!("/friends/{}?page={}&pageSize={}", user_id, page, page_size);
+    let path = format!("/friends?page={}&pageSize={}",page, page_size);
     ApiClient::get(&path).authenticated().send_json().await
 }
 
