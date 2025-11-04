@@ -7,4 +7,3 @@ pub mod error;
 pub mod friends;
 pub mod image;
 pub mod profile;
-pub mod user;

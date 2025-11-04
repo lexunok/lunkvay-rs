@@ -7,7 +7,6 @@ use uuid::Uuid;
 pub struct User {
     pub id: Uuid,
     pub user_name: String,
-    pub email: String,
     pub first_name: String,
     pub last_name: String,
     pub created_at: NaiveDateTime,
@@ -20,6 +19,7 @@ pub struct User {
 #[serde(rename_all = "camelCase")]
 pub struct UserListItem {
     pub user_id: Uuid,
+    pub user_name: String,
     pub first_name: String,
     pub last_name: String,
     pub is_online: bool,

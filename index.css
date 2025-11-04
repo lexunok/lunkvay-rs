@@ -479,6 +479,105 @@ html, body, #root {
     height: 80vh;
 }
 
+.friend_requests_list-6a7b6a7 {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.friend_request_item-6a7b6a7 {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px;
+    background-color: #2a2a2a;
+    border-radius: 8px;
+    color: #e2ddbd;
+
+    .user_info_compact-6a7b6a7 {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        text-decoration: none;
+        color: inherit;
+    }
+
+      .avatar-6a7b6a7 {
+        position: relative;
+        width: 50px;
+        height: 50px;
+        flex-shrink: 0;
+
+        img {
+        width: 100%;
+        height: 100%;
+        border-radius: 50%;
+        object-fit: cover;
+        }
+
+        .online_indicator-6a7b6a7 {
+            position: absolute;
+            bottom: 2px;
+            right: 2px;
+            width: 12px;
+            height: 12px;
+            background-color: #4caf50;
+            border-radius: 50%;
+            border: 2px solid #2a2a2a;
+        }
+    }
+
+    .sender_name-6a7b6a7 {
+        margin-left: 10px;
+        font-weight: bold;
+        font-size: 18px;
+    }
+}
+
+.request_actions-6a7b6a7 {
+    display: flex;
+    gap: 10px;
+    margin-right: 10px;
+
+    button {
+        padding: 0;
+        border: none;
+        border-radius: 6px;
+        cursor: pointer;
+        font-size: 14px;
+        font-weight: bold;
+        transition: background-color 0.2s ease, color 0.2s ease;
+        background-color: transparent;
+        color: #e2ddbd;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 32px;
+        height: 32px;
+
+        svg {
+            width: 40px;
+            height: 40px;
+        }
+
+        &.accept-6a7b6a7 {
+            color: #4caf50;
+
+            &:hover {
+                background-color: rgba(76, 175, 80, 0.2);
+            }
+        }
+
+        &.decline-6a7b6a7 {
+            color: #f44336;
+
+            &:hover {
+                background-color: rgba(244, 67, 54, 0.2);
+            }
+        }
+    }
+}
+
 
 .card-93eb935 {
   display: flex;

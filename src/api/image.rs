@@ -1,6 +1,5 @@
-use uuid::Uuid;
-
 use super::{base::ApiClient, error::ApiError};
+use uuid::Uuid;
 
 // pub async fn upload_avatar(file: web_sys::File) -> Result<String, ApiError> {
 //     let form_data = FormData::new();
@@ -14,7 +13,10 @@ use super::{base::ApiClient, error::ApiError};
 //     if !response.ok() {
 //         return Err(ApiError::from_response(response).await);
 //     }
-//     response.text().await.map_err(|e| ApiError::Parsing(e.to_string()))
+//     response
+//         .text()
+//         .await
+//         .map_err(|e| ApiError::Parsing(e.to_string()))
 // }
 
 // pub async fn upload_chat_image(chat_id: Uuid, file: web_sys::File) -> Result<String, ApiError> {

@@ -35,7 +35,10 @@ pub enum ChatType {
 #[serde(rename_all = "camelCase")]
 pub struct ChatMessage {
     pub id: Uuid,
-    pub sender: Option<User>,
+    pub sender_user_name: String,
+    pub sender_first_name: String,
+    pub sender_last_name: String,
+    pub sender_is_online: bool,
     pub system_message_type: SystemMessageType,
     pub message: String,
     pub is_edited: bool,
@@ -49,8 +52,12 @@ pub struct ChatMessage {
 #[serde(rename_all = "camelCase")]
 pub struct ChatMember {
     pub id: Uuid,
-    pub member: User,
+    pub user_id: String,
+    pub user_name: String,
+    pub first_name: String,
+    pub last_name: String,
     pub member_name: String,
+    pub is_online: bool,
     pub role: ChatMemberRole,
 }
 #[derive(Clone, Debug, PartialEq, Deserialize, Serialize)]
