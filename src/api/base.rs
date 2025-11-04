@@ -2,6 +2,7 @@ use super::error::ApiError;
 use crate::utils::{API_BASE_URL, clear_token, local_storage};
 use reqwasm::http::{Method, Request, Response};
 use serde::{Serialize, de::DeserializeOwned};
+use web_sys::FormData;
 
 pub struct ApiClient;
 
@@ -14,9 +15,9 @@ impl ApiClient {
         RequestBuilder::new(Method::POST, path, Some(body))
     }
 
-    // pub fn post_form_data<'a>(path: &'a str, body: FormData) -> RequestBuilderFormData<'a> {
-    //     RequestBuilderFormData::new(Method::POST, path, body)
-    // }
+    pub fn post_form_data<'a>(path: &'a str, body: FormData) -> RequestBuilderFormData<'a> {
+        RequestBuilderFormData::new(Method::POST, path, body)
+    }
 
     pub fn delete<'a>(path: &'a str) -> RequestBuilder<'a, ()> {
         RequestBuilder::new(Method::DELETE, path, None)
@@ -121,5 +122,50 @@ impl<'a, B: Serialize> RequestBuilder<'a, B> {
             return Err(ApiError::from_response(response).await);
         }
         Ok(())
+    }
+}
+
+pub struct RequestBuilderFormData<'a> {
+    method: Method,
+    path: &'a str,
+    body: FormData,
+    auth: bool,
+}
+
+impl<'a> RequestBuilderFormData<'a> {
+    fn new(method: Method, path: &'a str, body: FormData) -> Self {
+        Self {
+            method,
+            path,
+            body,
+            auth: false,
+        }
+    }
+
+    pub fn authenticated(mut self) -> Self {
+        self.auth = true;
+        self
+    }
+
+    pub async fn send_base(self) -> Result<Response, ApiError> {
+        let url = format!("{}{}", API_BASE_URL, self.path);
+        let mut request_builder = Request::new(&url).method(self.method.clone());
+
+        if self.auth {
+            let storage =
+                local_storage().ok_or(ApiError::Network("localStorage не доступен".to_string()))?;
+            let token = storage
+                .get_item("token")
+                .map_err(|_| ApiError::Network("Не удалось получить токен".to_string()))?
+                .ok_or(ApiError::Unauthorized)?;
+            request_builder = request_builder.header("Authorization", &format!("Bearer {}", token));
+        }
+
+        request_builder = request_builder.body(self.body);
+
+        request_builder
+            .send()
+            .await
+            .map_err(|e| ApiError::Network(e.to_string()))
     }
 }

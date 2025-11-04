@@ -1,5 +1,5 @@
 use crate::{
-    api,
+    api::{self, image::{delete_avatar, upload_avatar}},
     components::{friend_card::FriendCard, spinner::Spinner},
     utils::{API_BASE_URL, get_current_user_id},
 };
@@ -7,7 +7,8 @@ use leptos::prelude::*;
 use leptos_router::{hooks::use_params, params::Params};
 use stylance::import_style;
 use uuid::Uuid;
-
+use web_sys::File;
+use web_sys::wasm_bindgen::JsCast;
 import_style!(style, "profile.module.scss");
 
 #[derive(Params, PartialEq, Clone, Debug)]
@@ -22,6 +23,8 @@ use leptos::ev::SubmitEvent;
 pub fn ProfilePage() -> impl IntoView {
     let params = use_params::<ProfileParams>();
     let (show_modal, set_show_modal) = signal(false);
+    let (selected_file, set_selected_file) = signal_local::<Option<File>>(None);
+    let (preview_url, set_preview_url) = signal::<Option<String>>(None);
 
     let update_profile_action = Action::new_local(|req: &UpdateProfileRequest| {
         let req = req.clone();
@@ -31,6 +34,17 @@ pub fn ProfilePage() -> impl IntoView {
                 .map_err(|e| e.to_string())
         }
     });
+
+    let upload_avatar_action = Action::new_local(move|_: &()| {
+        let file_opt = selected_file.get().to_owned();
+        async move {
+            if let Some(file) = file_opt {
+                let _ = upload_avatar(file).await.map_err(|e| e.to_string());
+            }
+        }
+    });
+
+    let delete_avatar_action = Action::new_local(|_: &()| async move { delete_avatar().await });
 
     let profile_resource = LocalResource::new(move || {
         let params = params.get();
@@ -45,19 +59,35 @@ pub fn ProfilePage() -> impl IntoView {
     });
 
     Effect::new(move |_| {
-        if update_profile_action.version().get() > 0 {
+        if update_profile_action.version().get() > 0
+            || upload_avatar_action.version().get() > 0
+            || delete_avatar_action.version().get() > 0
+        {
             profile_resource.refetch();
         }
     });
 
+    let on_file_change = move |ev: web_sys::Event| {
+        let input = ev.target()
+            .unwrap()
+            .unchecked_into::<web_sys::HtmlInputElement>(); 
+        if let Some(file_list) = input.files() {
+            if let Some(file) = file_list.get(0) {
+                let url = web_sys::Url::create_object_url_with_blob(&file).unwrap();
+                set_preview_url.set(Some(url));
+                set_selected_file.set(Some(file));
+            }
+        }
+    };
+
     let profile_view = move || {
         profile_resource.get().map(|result| match result {
             Ok(profile) => {
-                let avatar_url = format!(
+                let (avatar_url, _) = signal(format!(
                     "{}/avatar/{}",
                     API_BASE_URL,
                     profile.user.id
-                );
+                ));
                 let is_current_user = get_current_user_id().map_or(false, |id| id == profile.user.id);
 
                 let new_status = RwSignal::new(profile.status.clone().unwrap_or_default());
@@ -70,6 +100,9 @@ pub fn ProfilePage() -> impl IntoView {
                         new_about: Some(new_about.get()),
                     };
                     update_profile_action.dispatch(request);
+                    if let Some(_) = selected_file.get() {
+                        upload_avatar_action.dispatch(());
+                    }
                     set_show_modal.set(false);
                 };
 
@@ -79,7 +112,7 @@ pub fn ProfilePage() -> impl IntoView {
                             <div class=style::profile_banner></div>
                             <div class=style::user_info_card>
                                 <div class=style::avatar>
-                                    <img src=avatar_url onerror="this.onerror=null;this.src='/images/userdefault.webp';"/>
+                                    <img src=avatar_url.get() onerror="this.onerror=null;this.src='/images/userdefault.webp';"/>
                                 </div>
                                 <h1>
                                     {format!(
@@ -124,6 +157,13 @@ pub fn ProfilePage() -> impl IntoView {
                                 <div class=style::modal_content on:click=|e| e.stop_propagation()>
                                     <h2>"Редактировать профиль"</h2>
                                     <form on:submit=on_submit>
+                                        <div class=style::avatar_upload_section>
+                                            <div class=style::avatar_preview>
+                                                <img src=move || preview_url.get().unwrap_or_else(|| avatar_url.get()) onerror="this.onerror=null;this.src='/images/userdefault.webp';"/>
+                                            </div>
+                                            <input type="file" accept="image/*" on:change=on_file_change class=style::file_input/>
+                                            <button type="button" on:click=move |_| {delete_avatar_action.dispatch(());} class=style::delete_avatar_button>"Удалить аватар"</button>
+                                        </div>
                                         <div class=style::form_field>
                                             <label for="status">"Статус"</label>
                                             <input
