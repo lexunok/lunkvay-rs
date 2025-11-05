@@ -6,8 +6,9 @@ use uuid::Uuid;
 #[derive(Clone, Debug, PartialEq, Deserialize, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct CreateChatMessageRequest {
-    pub chat_id: Uuid,
+    pub chat_id: Option<Uuid>,
     pub message: String,
+    pub receiver_id: Option<Uuid>,
 }
 
 #[derive(Clone, Debug, PartialEq, Deserialize, Serialize)]

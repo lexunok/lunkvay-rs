@@ -6,6 +6,7 @@ use serde::Deserialize;
 use uuid::Uuid;
 use web_sys::Storage;
 
+pub const DOMAIN: &str = "lunkvay.runasp.net";
 pub const API_BASE_URL: &str = "https://lunkvay.lex48949.workers.dev/api/v1";
 
 #[derive(Debug, Deserialize)]
@@ -29,6 +30,9 @@ pub fn get_current_user_id() -> Option<Uuid> {
 
 pub fn local_storage() -> Option<Storage> {
     window().local_storage().ok().flatten()
+}
+pub fn get_token() -> Option<String> {
+    local_storage()?.get_item("token").ok().flatten()
 }
 pub fn has_token() -> bool {
     local_storage()

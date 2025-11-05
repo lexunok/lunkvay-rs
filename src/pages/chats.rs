@@ -3,12 +3,14 @@ use crate::components::chat::messages::Messages;
 use crate::components::spinner::Spinner;
 use crate::models::chat::{Chat, ChatMessage, ChatType, SystemMessageType};
 use crate::models::user::User;
-use crate::utils::{API_BASE_URL, get_current_user_id};
+use crate::utils::{API_BASE_URL, DOMAIN, get_current_user_id, get_token};
 use chrono::Utc;
 use leptos::prelude::*;
+use signalr_client::SignalRClient;
 use stylance::import_style;
 use uuid::Uuid;
-
+use leptos::task::spawn_local;
+use leptos::logging::log;
 import_style!(style, "chats.module.scss");
 
 #[component]
@@ -17,6 +19,18 @@ pub fn ChatsPage() -> impl IntoView {
         LocalResource::new(async move || api::chat::get_all_chats().await.unwrap_or_default());
 
     let (selected_chat, set_chat) = signal(None::<Chat>);
+    let ws_client = LocalResource::new(move || async move {
+        SignalRClient::connect_with(
+                        DOMAIN,
+                        "chatHub",
+                        |c| {
+                            c.authenticate_bearer(get_token().unwrap_or_default().to_owned());
+                        },
+                    )
+                    .await
+                    .expect("Failed to connect")
+    });
+
     let messages_view = move || {
         match selected_chat.get() {
             Some(chat) => {
@@ -29,6 +43,27 @@ pub fn ChatsPage() -> impl IntoView {
             }
         }
     };
+    Effect::new(move |_| {
+        log!("-2");
+        if ws_client.get().is_some() {
+            spawn_local(async move {
+                log!("-1");
+
+                if let Some(mut client) = ws_client.get_untracked() {
+                    log!("0");
+                    client.register("ReceiveMessage".to_string(), move |ctx| {
+                        let result = ctx.argument::<ChatMessage>(0);
+                        log!("{}",result.unwrap().message);
+                        // if let Ok(msg) = result {
+                        //     messages.update(|msgs| msgs.push(msg));
+                        // } else {
+                        //     web_sys::console::error_1(&"Invalid message".into());
+                        // }
+                    });
+                }
+            });
+        }
+    });
 
     view! {
         <div class=style::container>

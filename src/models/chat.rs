@@ -4,16 +4,17 @@ use serde::{Deserialize, Serialize};
 use serde_repr::{Deserialize_repr, Serialize_repr};
 use uuid::Uuid;
 
-#[derive(Clone, Debug, PartialEq, Deserialize, Serialize, Default)]
+#[derive(Clone, Debug, PartialEq, Deserialize_repr, Serialize_repr, Default)]
 #[serde(rename_all = "camelCase")]
+#[repr(u8)]
 pub enum SystemMessageType {
     #[default]
-    None,
-    UserJoined,
-    UserRejoined,
-    UserLeft,
-    ChatCreated,
-    ChatUpdated,
+    None = 0,
+    UserJoined = 1,
+    UserRejoined = 2,
+    UserLeft = 3,
+    ChatCreated = 4,
+    ChatUpdated = 5,
 }
 
 #[derive(Clone, Debug, PartialEq, Deserialize, Serialize)]
@@ -35,10 +36,11 @@ pub enum ChatType {
 #[serde(rename_all = "camelCase")]
 pub struct ChatMessage {
     pub id: Uuid,
+    pub sender_id: Uuid,
     pub sender_user_name: String,
     pub sender_first_name: String,
-    pub sender_last_name: String,
-    pub sender_is_online: bool,
+    pub sender_last_name: Option<String>,
+    pub sender_is_online: Option<bool>,
     pub system_message_type: SystemMessageType,
     pub message: String,
     pub is_edited: bool,

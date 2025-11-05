@@ -27,13 +27,6 @@ pub async fn get_all_chats() -> Result<Vec<Chat>, ApiError> {
     ApiClient::get("/chats").authenticated().send_json().await
 }
 
-pub async fn create_personal_chat(request: CreatePersonalChatRequest) -> Result<Chat, ApiError> {
-    ApiClient::post("/chats/personal", &request)
-        .authenticated()
-        .send_json()
-        .await
-}
-
 pub async fn create_group_chat(request: CreateGroupChatRequest) -> Result<Chat, ApiError> {
     ApiClient::post("/chats/group", &request)
         .authenticated()
