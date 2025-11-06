@@ -221,7 +221,7 @@ interface ProfileDTO {
     }
     ```
 *   **Ответ:**
-    *   `200 OK`: Объект `User`.
+    *   `200 OK`: Успешная регистрация.
     *   `400 Bad Request`, `409 Conflict`: Сообщение об ошибке (строка).
 
 ---
@@ -235,7 +235,7 @@ interface ProfileDTO {
 *   **Аутентификация:** Требуется.
 *   **Запрос:** Нет.
 *   **Ответ:**
-    *   `200 OK`: Строка изображения в кодировке Base64.
+    *   `200 OK`: Файл изображения (`image/webp`).
     *   `404 Not Found`, `500 Internal Server Error`: Сообщение об ошибке (строка).
 
 #### `GET /api/v1/Avatar/{userId}`
@@ -246,7 +246,7 @@ interface ProfileDTO {
 *   **Параметры пути:**
     *   `userId`: `string` (GUID) - ID пользователя.
 *   **Ответ:**
-    *   `200 OK`: Строка изображения в кодировке Base64.
+    *   `200 OK`: Файл изображения (`image/webp`).
     *   `404 Not Found`, `500 Internal Server Error`: Сообщение об ошибке (строка).
 
 #### `POST /api/v1/Avatar`
@@ -258,7 +258,7 @@ interface ProfileDTO {
     *   Максимальный размер файла: 5 МБ.
     *   Разрешенные расширения: `.jpg`, `.jpeg`, `.png`, `.gif`, `.bmp`.
 *   **Ответ:**
-    *   `200 OK`: Строка, указывающая на успех.
+    *   `200 OK`: Файл изображения (`image/webp`), представляющий загруженный и обработанный аватар.
     *   `400 Bad Request`, `500 Internal Server Error`: Сообщение об ошибке (строка).
 
 #### `DELETE /api/v1/Avatar`
@@ -268,7 +268,7 @@ interface ProfileDTO {
 *   **Аутентификация:** Требуется.
 *   **Запрос:** Нет.
 *   **Ответ:**
-    *   `200 OK`: Строка, указывающая на успех.
+    *   `200 OK`: Успешное удаление.
     *   `500 Internal Server Error`: Сообщение об ошибке (строка).
 
 ---
@@ -497,22 +497,6 @@ interface ProfileDTO {
     *   `200 OK`: Массив объектов `ChatDTO`.
     *   `500 Internal Server Error`: Сообщение об ошибке (строка).
 
-#### `POST /api/v1/Chats/personal`
-
-Создает новый личный чат.
-
-*   **Аутентификация:** Требуется.
-*   **Тело запроса:**
-    ```typescript
-    interface CreatePersonalChatRequest {
-      interlocutor: UserDTO;
-      message: string;
-    }
-    ```
-*   **Ответ:**
-    *   `200 OK`: Объект `ChatDTO`.
-    *   `400 Bad Request`, `500 Internal Server Error`: Сообщение об ошибке (строка).
-
 #### `POST /api/v1/Chats/group`
 
 Создает новый групповой чат.
@@ -720,7 +704,7 @@ interface ProfileDTO {
 *   **Параметры пути:**
     *   `chatId`: `string` (GUID) - ID чата.
 *   **Ответ:**
-    *   `200 OK`: Файл изображения (JPEG).
+    *   `200 OK`: Файл изображения (`image/webp`).
     *   `404 Not Found`, `500 Internal Server Error`: Сообщение об ошибке (строка).
 
 #### `POST /api/v1/chat-image/{chatId}`
@@ -734,7 +718,7 @@ interface ProfileDTO {
     *   Максимальный размер файла: 5 МБ.
     *   Разрешенные расширения: `.jpg`, `.jpeg`, `.png`, `.gif`, `.bmp`.
 *   **Ответ:**
-    *   `200 OK`: Строка, указывающая на успех.
+    *   `200 OK`: Файл изображения (`image/webp`), представляющий загруженное изображение.
     *   `400 Bad Request`, `500 Internal Server Error`: Сообщение об ошибке (строка).
 
 #### `DELETE /api/v1/chat-image/{chatId}`
@@ -745,5 +729,5 @@ interface ProfileDTO {
 *   **Параметры пути:**
     *   `chatId`: `string` (GUID) - ID чата.
 *   **Ответ:**
-    *   `200 OK`: Строка, указывающая на успех.
+    *   `200 OK`.
     *   `500 Internal Server Error`: Сообщение об ошибке (строка).

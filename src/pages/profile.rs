@@ -1,6 +1,8 @@
 use crate::{
-    api::profile::{get_user_profile, get_current_user_profile},
-    components::{friend_card::FriendCard, profile::editing_window::EditingWindow, spinner::Spinner},
+    api::profile::{get_current_user_profile, get_user_profile},
+    components::{
+        friend_card::FriendCard, profile::editing_window::EditingWindow, spinner::Spinner,
+    },
     utils::{API_BASE_URL, get_current_user_id},
 };
 use leptos::prelude::*;
@@ -42,8 +44,8 @@ pub fn ProfilePage() -> impl IntoView {
                                 <div class=style::profile_banner></div>
                                 <div class=style::user_info_card>
                                     <div class=style::avatar>
-                                        <img 
-                                            src=format!("{}/avatar/{}", API_BASE_URL, profile.user.id) 
+                                        <img
+                                            src=format!("{}/avatar/{}", API_BASE_URL, profile.user.id)
                                             onerror="this.onerror=null;this.src='/images/userdefault.webp';"
                                         />
                                     </div>
@@ -86,8 +88,8 @@ pub fn ProfilePage() -> impl IntoView {
                             </aside>
 
                             <Show when=move || show_editing_window.get()>
-                                <EditingWindow 
-                                    status=profile.status.clone().unwrap_or_default() 
+                                <EditingWindow
+                                    status=profile.status.clone().unwrap_or_default()
                                     about=profile.about.clone().unwrap_or_default()
                                     avatar_url = format!("{}/avatar/{}", API_BASE_URL, profile.user.id)
                                     set_show_editing_window = set_show_editing_window

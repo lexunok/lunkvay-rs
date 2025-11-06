@@ -1,18 +1,21 @@
-use crate::api::{profile::{update_profile}, image::{delete_avatar, upload_avatar}};
+use crate::api::profile::UpdateProfileRequest;
+use crate::api::{
+    image::{delete_avatar, upload_avatar},
+    profile::update_profile,
+};
 use leptos::prelude::*;
 use stylance::import_style;
 use web_sys::SubmitEvent;
-use crate::api::profile::UpdateProfileRequest;
 use web_sys::wasm_bindgen::JsCast;
 import_style!(style, "editing_window.module.scss");
 
 #[component]
 pub fn EditingWindow(
-    status: String, 
-    about: String, 
-    avatar_url:String, 
-    set_show_editing_window: WriteSignal<bool>, 
-    refetch_profile: Callback<()>
+    status: String,
+    about: String,
+    avatar_url: String,
+    set_show_editing_window: WriteSignal<bool>,
+    refetch_profile: Callback<()>,
 ) -> impl IntoView {
     //SIGNALS
     let new_status = RwSignal::new(status);
@@ -21,15 +24,12 @@ pub fn EditingWindow(
     let selected_file = RwSignal::new_local(None);
 
     //ACTIONS
-    let delete_avatar_action = Action::new_local(move |_: &()| async move { delete_avatar().await });
-    
+    let delete_avatar_action =
+        Action::new_local(move |_: &()| async move { delete_avatar().await });
+
     let update_profile_action = Action::new_local(|req: &UpdateProfileRequest| {
         let req = req.clone();
-        async move {
-            update_profile(req)
-                .await
-                .map_err(|e| e.to_string())
-        }
+        async move { update_profile(req).await.map_err(|e| e.to_string()) }
     });
 
     let upload_avatar_action = Action::new_local(move |_: &()| {
@@ -52,10 +52,12 @@ pub fn EditingWindow(
         if let Some(_) = selected_file.get() {
             upload_avatar_action.dispatch(());
         }
-        set_show_editing_window.set(false);
     };
     let on_file_change = move |ev: web_sys::Event| {
-        if let Some(input) = ev.target().and_then(|t| t.dyn_into::<web_sys::HtmlInputElement>().ok()) {
+        if let Some(input) = ev
+            .target()
+            .and_then(|t| t.dyn_into::<web_sys::HtmlInputElement>().ok())
+        {
             if let Some(file) = input.files().and_then(|list| list.get(0)) {
                 let url = web_sys::Url::create_object_url_with_blob(&file).unwrap();
                 preview_url.set(Some(url));
@@ -63,7 +65,7 @@ pub fn EditingWindow(
             }
         }
     };
-    
+
     //EFFECTS
     Effect::new(move |_| {
         if update_profile_action.version().get() > 0
@@ -71,6 +73,7 @@ pub fn EditingWindow(
             || delete_avatar_action.version().get() > 0
         {
             refetch_profile.run(());
+            set_show_editing_window.set(false);
         }
     });
 
