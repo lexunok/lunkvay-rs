@@ -1,357 +1,210 @@
 .profile_page {
-    display: grid;
-    grid-template-columns: 2fr 1fr;
-    gap: 30px;
-    padding: 20px;
-    color: #e2ddbd;
-    background-color: #1a1a1a;
-    min-height: 100vh;
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: 30px;
+  padding: 20px;
+  color: #e2ddbd;
+  background-color: #1a1a1a;
+  min-height: 100vh;
 }
 
 .main_content {
-    display: flex;
-    flex-direction: column;
-    gap: 30px;
+  display: flex;
+  flex-direction: column;
+  gap: 30px;
 }
 
 .profile_banner {
-    height: 200px;
-    background-color: #303030;
-    border-radius: 12px;
-    position: relative;
-    overflow: hidden;
+  height: 200px;
+  background-color: #303030;
+  border-radius: 12px;
+  position: relative;
+  overflow: hidden;
 }
 
 .user_info_card {
-    background-color: #303030;
-    border-radius: 12px;
-    padding: 30px;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    text-align: center;
-    margin-top: -200px;
-    position: relative;
-    z-index: 1;
+  background-color: #303030;
+  border-radius: 12px;
+  padding: 30px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  margin-top: -200px;
+  position: relative;
+  z-index: 1;
 
-    .avatar {
-        width: 160px;
-        height: 160px;
-        border-radius: 50%;
-        overflow: hidden;
-        border: 4px solid #1a1a1a;
-        margin-bottom: 15px;
+  .avatar {
+    width: 160px;
+    height: 160px;
+    border-radius: 50%;
+    overflow: hidden;
+    border: 4px solid #1a1a1a;
+    margin-bottom: 15px;
 
-        img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-        }
+    img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
     }
+  }
 
-    h1 {
-        font-size: 38px;
-        font-weight: bold;
-        margin: 0 0 5px 0;
-        color: #e2ddbd;
-    }
+  h1 {
+    font-size: 38px;
+    font-weight: bold;
+    margin: 0 0 5px;
+    color: #e2ddbd;
+  }
 
-    .status {
-        font-size: 20px;
-        color: #aaa;
-        margin: 0;
-    }
+  .status {
+    font-size: 20px;
+    color: #aaa;
+    margin: 0;
+  }
 }
 
 .section_card {
-    background-color: #303030;
-    border-radius: 12px;
-    padding: 30px;
-    display: flex;
-    flex-direction: column;
-    gap: 15px;
-    flex-grow: 1;
+  background-color: #303030;
+  border-radius: 12px;
+  padding: 30px;
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+  flex-grow: 1;
 
-    h2 {
-        font-size: 24px;
-        font-weight: bold;
-        color: #e2ddbd;
-        margin: 0 0 10px 0;
-        padding-bottom: 15px;
-        border-bottom: 1px solid #444;
-    }
+  h2 {
+    font-size: 24px;
+    font-weight: bold;
+    color: #e2ddbd;
+    margin: 0 0 10px;
+    padding-bottom: 15px;
+    border-bottom: 1px solid #444;
+  }
 
-    div {
-        color: #aaa;
-        line-height: 1.6;
-        white-space: pre-wrap;
-    }
+  div {
+    color: #aaa;
+    line-height: 1.6;
+    white-space: pre-wrap;
+  }
 }
+
 .sidebar {
-    display: flex;
-    flex-direction: column;
-    gap: 30px;
+  display: flex;
+  flex-direction: column;
+  gap: 30px;
 }
 
-.friends_card, .actions_card {
-    background-color: #303030;
-    border-radius: 12px;
-    padding: 30px;
-    display: flex;
-    flex-direction: column;
-    gap: 15px;
+.friends_card,
+.actions_card {
+  background-color: #303030;
+  border-radius: 12px;
+  padding: 30px;
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
 }
 
 .friends_card {
-    .friends_header {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        padding-bottom: 15px;
-        border-bottom: 1px solid #444;
+  .friends_header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-bottom: 15px;
+    border-bottom: 1px solid #444;
 
-        h2 {
-            font-size: 22px;
-            font-weight: bold;
-            color: #e2ddbd;
-            margin: 0;
-        }
-
-        span {
-            font-size: 18px;
-            color: #aaa;
-        }
+    h2 {
+      font-size: 22px;
+      font-weight: bold;
+      color: #e2ddbd;
+      margin: 0;
     }
 
-    .friends_grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
-        gap: 15px;
-        max-height: 300px;
-        overflow-y: auto;
-        padding-right: 5px;
+    span {
+      font-size: 18px;
+      color: #aaa;
     }
+  }
+
+  .friends_grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
+    gap: 15px;
+    max-height: 300px;
+    overflow-y: auto;
+    padding-right: 5px;
+  }
 }
 
 .actions_card {
-    button {
-        padding: 12px 15px;
-        font-weight: bold;
-        background-color: #e2ddbd;
-        color: #1a1a1a;
-        border: none;
-        border-radius: 8px;
-        cursor: pointer;
-        font-size: 16px;
-        transition: all 0.2s ease;
-
-        &:hover {
-          opacity: 0.9;
-        }
-
-        &:active {
-            transform: scale(0.96);
-        }
-
-        &.secondary_button {
-            background-color: transparent;
-            color: #e2ddbd;
-            border: 1px solid #e2ddbd;
-
-            &:hover {
-                background-color: rgba(226, 221, 189, 0.1);
-            }
-        }
-    }
-}
-
-.error_message {
-    color: #ff6b6b;
-    padding: 20px;
-    text-align: center;
-    font-size: 18px;
-}
-
-.spinner_container {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    width: 100%;
-    height: 80vh;
-}
-
-.modal_cancel_button {
-    padding: 12px 20px;
+  button {
+    padding: 12px 15px;
     font-weight: bold;
-    border-radius: 8px;
-    cursor: pointer;
-    font-size: 16px;
-    transition: all 0.2s ease;
-    background-color: transparent;
-    color: #e2ddbd;
-    border: 1px solid #444;
-
-    &:hover {
-        background-color: #444;
-    }
-
-    &:active {
-        transform: scale(0.96);
-    }
-}
-
-.form_field {
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-    margin-top: 20px;
-}
-
-.form_field label {
-    font-size: 16px;
-    font-weight: bold;
-    color: #aaa;
-}
-
-.form_field input,
-.form_field textarea {
-    background-color: #2a2a2a;
-    color: #e2ddbd;
-    border: 1px solid #444;
-    padding: 12px;
-    font-size: 16px;
-    border-radius: 8px;
-    transition: border-color 0.2s ease, box-shadow 0.2s ease;
-    resize: vertical;
-    font-family: inherit;
-}
-
-.form_field input:focus,
-.form_field textarea:focus {
-    outline: none;
-    border-color: #e2ddbd;
-    box-shadow: 0 0 0 3px rgba(226, 221, 189, 0.1);
-}
-
-.form_actions {
-    display: flex;
-    gap: 15px;
-    justify-content: flex-end;
-    padding-top: 20px;
-    margin-top: 10px;
-    border-top: 1px solid #444;
-}
-
-.form_actions button {
-    padding: 12px 20px;
-    font-weight: bold;
+    background-color: #e2ddbd;
+    color: #1a1a1a;
     border: none;
     border-radius: 8px;
     cursor: pointer;
     font-size: 16px;
     transition: all 0.2s ease;
-}
-
-.form_actions button:hover {
-    opacity: 0.9;
-}
-
-.form_actions button:active {
-    transform: scale(0.96);
-}
-
-.form_actions button[type="submit"] {
-    background-color: #e2ddbd;
-    color: #1a1a1a;
-}
-
-
-.modal_backdrop {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background-color: rgba(0, 0, 0, 0.7);
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    z-index: 1000;
-}
-
-.modal_content {
-    background-color: #303030;
-    padding: 30px;
-    border-radius: 12px;
-    width: 100%;
-    max-width: 500px;
-    display: flex;
-    flex-direction: column;
-
-    h2 {
-        font-size: 22px;
-        font-weight: bold;
-        color: #e2ddbd;
-        margin: 0;
-        padding-bottom: 20px;
-        border-bottom: 1px solid #444;
-    }
-}
-
-.avatar_upload_section {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 15px;
-    margin-bottom: 20px;
-    margin-top: 10px;
-}
-
-.avatar_preview {
-    width: 120px;
-    height: 120px;
-    border-radius: 50%;
-    overflow: hidden;
-    border: 3px solid #444;
-
-    img {
-        width: 100%;
-        height: 100%;
-        object-fit: cover;
-    }
-}
-
-.file_input {
-    color: #e2ddbd;
-    &::file-selector-button {
-        padding: 8px 12px;
-        font-weight: bold;
-        background-color: #444;
-        color: #e2ddbd;
-        border: none;
-        border-radius: 6px;
-        cursor: pointer;
-        transition: background-color 0.2s ease;
-
-        &:hover {
-            background-color: #555;
-        }
-    }
-}
-
-.delete_avatar_button {
-    background-color: transparent;
-    color: #ff6b6b;
-    border: 1px solid #ff6b6b;
-    padding: 8px 12px;
-    border-radius: 6px;
-    cursor: pointer;
-    font-weight: bold;
-    font-size: 14px;
-    transition: all 0.2s ease;
 
     &:hover {
-        background-color: #ff6b6b;
-        color: #1a1a1a;
+      opacity: 0.9;
     }
+
+    &:active {
+      transform: scale(0.96);
+    }
+
+    &.secondary_button {
+      background-color: transparent;
+      color: #e2ddbd;
+      border: 1px solid #e2ddbd;
+
+      &:hover {
+        background-color: rgba(226, 221, 189, 0.1);
+      }
+    }
+  }
+}
+
+.error_message {
+  color: #ff6b6b;
+  padding: 20px;
+  text-align: center;
+  font-size: 18px;
+}
+
+.spinner_container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  height: 80vh;
+}
+
+@media (max-width: 900px) {
+  .profile_page {
+    grid-template-columns: 1fr;
+  }
+
+  .user_info_card {
+    margin-top: -100px;
+
+    h1 {
+      font-size: 28px;
+    }
+
+    .status {
+      font-size: 16px;
+    }
+  }
+
+  .section_card {
+    padding: 20px;
+  }
+
+  .friends_card,
+  .actions_card {
+    padding: 20px;
+  }
 }

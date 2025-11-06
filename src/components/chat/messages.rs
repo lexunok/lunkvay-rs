@@ -12,7 +12,7 @@ use leptos::logging::log;
 import_style!(style, "messages.module.scss");
 
 #[component]
-pub fn Messages(chat: Chat) -> impl IntoView {
+pub fn Messages(chat: Chat, ws_client: LocalResource<SignalRClient>) -> impl IntoView {
 
     let chat_id = chat.id;
     let chat_image = format!("{}/chat-image/{}", API_BASE_URL, chat_id);
@@ -26,31 +26,21 @@ pub fn Messages(chat: Chat) -> impl IntoView {
 
     let messages = RwSignal::new(Vec::<ChatMessage>::new());
     
-    let client = LocalResource::new(move || async move {
-        SignalRClient::connect_with(
-                        DOMAIN,
-                        "chatHub",
-                        |c| {
-                            c.authenticate_bearer(get_token().unwrap_or_default().to_owned());
-                        },
-                    )
-                    .await
-                    .expect("Failed to connect")
-    });
-
     Effect::new(move |_| {
         if let Some(initial) = initial_messages.get() {
             messages.set(initial);
         }
     });
-    // if let Some(mut client) = second_client {
-    //     let res = client
-    //         .invoke_with_args::<bool,_>("JoinRoom".to_string(), |a| {
-    //             a.argument(chat_id.to_string());
-    //         })
-    //         .await;
-    //     log!("2");
-    // }
+    spawn_local(async move{
+        if let Some(mut client) = ws_client.get() {
+            let res = client
+                .invoke_with_args::<bool,_>("JoinRoom".to_string(), |a| {
+                    a.argument(chat_id.to_string());
+                })
+                .await.unwrap();
+            log!("Connected to room");
+        }
+    });
 
     let send_message = Action::new_local(move |input: &CreateChatMessageRequest| {
         let input = input.clone();

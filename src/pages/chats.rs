@@ -35,7 +35,7 @@ pub fn ChatsPage() -> impl IntoView {
         match selected_chat.get() {
             Some(chat) => {
                 view! {
-                    <Messages chat = chat/>
+                    <Messages chat = chat ws_client = ws_client/>
                 }.into_any()
             }
             None => {
@@ -44,13 +44,9 @@ pub fn ChatsPage() -> impl IntoView {
         }
     };
     Effect::new(move |_| {
-        log!("-2");
         if ws_client.get().is_some() {
             spawn_local(async move {
-                log!("-1");
-
                 if let Some(mut client) = ws_client.get_untracked() {
-                    log!("0");
                     client.register("ReceiveMessage".to_string(), move |ctx| {
                         let result = ctx.argument::<ChatMessage>(0);
                         log!("{}",result.unwrap().message);
@@ -60,6 +56,7 @@ pub fn ChatsPage() -> impl IntoView {
                         //     web_sys::console::error_1(&"Invalid message".into());
                         // }
                     });
+                    log!("connectend to chat hub");
                 }
             });
         }
