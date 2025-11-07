@@ -5,14 +5,12 @@ use crate::{
     utils::{API_BASE_URL, DOMAIN, get_token},
 };
 use leptos::prelude::*;
-use leptos::task::spawn_local;
 use stylance::import_style;
-use signalr_client::SignalRClient;
 use leptos::logging::log;
 import_style!(style, "messages.module.scss");
 
 #[component]
-pub fn Messages(chat: Chat, ws_client: LocalResource<SignalRClient>) -> impl IntoView {
+pub fn Messages(chat: Chat) -> impl IntoView {
 
     let chat_id = chat.id;
     let chat_image = format!("{}/chat-image/{}", API_BASE_URL, chat_id);
@@ -29,16 +27,6 @@ pub fn Messages(chat: Chat, ws_client: LocalResource<SignalRClient>) -> impl Int
     Effect::new(move |_| {
         if let Some(initial) = initial_messages.get() {
             messages.set(initial);
-        }
-    });
-    spawn_local(async move{
-        if let Some(mut client) = ws_client.get() {
-            let res = client
-                .invoke_with_args::<bool,_>("JoinRoom".to_string(), |a| {
-                    a.argument(chat_id.to_string());
-                })
-                .await.unwrap();
-            log!("Connected to room");
         }
     });
 

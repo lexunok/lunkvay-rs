@@ -19,9 +19,11 @@ struct ProfileParams {
 
 #[component]
 pub fn ProfilePage() -> impl IntoView {
+    //SIGNALS
     let params = use_params::<ProfileParams>();
     let (show_editing_window, set_show_editing_window) = signal(false);
 
+    //RESOURCES
     let profile_res = LocalResource::new(move || {
         let params = params.get();
         async move {
@@ -34,6 +36,7 @@ pub fn ProfilePage() -> impl IntoView {
         }
     });
 
+    //VIEW
     view! {
         <Suspense fallback=|| view! { <div class=style::spinner_container><Spinner /></div> }>
             {move || profile_res.get().map(|result| {

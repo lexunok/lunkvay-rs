@@ -6,7 +6,6 @@ use crate::models::user::User;
 use crate::utils::{API_BASE_URL, DOMAIN, get_current_user_id, get_token};
 use chrono::Utc;
 use leptos::prelude::*;
-use signalr_client::SignalRClient;
 use stylance::import_style;
 use uuid::Uuid;
 use leptos::task::spawn_local;
@@ -19,23 +18,12 @@ pub fn ChatsPage() -> impl IntoView {
         LocalResource::new(async move || api::chat::get_all_chats().await.unwrap_or_default());
 
     let (selected_chat, set_chat) = signal(None::<Chat>);
-    let ws_client = LocalResource::new(move || async move {
-        SignalRClient::connect_with(
-                        DOMAIN,
-                        "chatHub",
-                        |c| {
-                            c.authenticate_bearer(get_token().unwrap_or_default().to_owned());
-                        },
-                    )
-                    .await
-                    .expect("Failed to connect")
-    });
 
     let messages_view = move || {
         match selected_chat.get() {
             Some(chat) => {
                 view! {
-                    <Messages chat = chat ws_client = ws_client/>
+                    <Messages chat = chat/>
                 }.into_any()
             }
             None => {
@@ -43,24 +31,6 @@ pub fn ChatsPage() -> impl IntoView {
             }
         }
     };
-    Effect::new(move |_| {
-        if ws_client.get().is_some() {
-            spawn_local(async move {
-                if let Some(mut client) = ws_client.get_untracked() {
-                    client.register("ReceiveMessage".to_string(), move |ctx| {
-                        let result = ctx.argument::<ChatMessage>(0);
-                        log!("{}",result.unwrap().message);
-                        // if let Ok(msg) = result {
-                        //     messages.update(|msgs| msgs.push(msg));
-                        // } else {
-                        //     web_sys::console::error_1(&"Invalid message".into());
-                        // }
-                    });
-                    log!("connectend to chat hub");
-                }
-            });
-        }
-    });
 
     view! {
         <div class=style::container>

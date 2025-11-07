@@ -1,4 +1,3 @@
-use crate::api;
 use crate::components::spinner::Spinner;
 use crate::models::auth::{LoginRequest, RegisterRequest};
 use crate::utils::local_storage;
@@ -6,14 +5,15 @@ use leptos::ev;
 use leptos::prelude::*;
 use leptos_router::hooks::use_navigate;
 use stylance::import_style;
+use crate::api::auth::{register, login};
 
 import_style!(style, "login.module.scss");
 
 #[component]
 pub fn LoginPage() -> impl IntoView {
-    let (is_register_mode, set_is_register_mode) = signal_local(false);
-    let (error, set_error) = signal_local(None::<String>);
-
+    //SIGNALS
+    let is_register_mode = RwSignal::new(false);
+    let error = RwSignal::new(None::<String>);
     let first_name = RwSignal::new(String::new());
     let last_name = RwSignal::new(String::new());
     let user_name = RwSignal::new(String::new());
@@ -22,10 +22,11 @@ pub fn LoginPage() -> impl IntoView {
 
     let navigate = use_navigate();
 
+    //ACTIONS
     let login_action = Action::new_local(|(email, password): &(String, String)| {
         let (email, password) = (email.clone(), password.clone());
         async move {
-            api::auth::login(LoginRequest { email, password })
+            login(LoginRequest { email, password })
                 .await
                 .map_err(|e| e.to_string())
         }
@@ -41,7 +42,7 @@ pub fn LoginPage() -> impl IntoView {
                 pass.clone(),
             );
             async move {
-                api::auth::register(RegisterRequest {
+                register(RegisterRequest {
                     first_name,
                     last_name,
                     user_name,
@@ -54,6 +55,7 @@ pub fn LoginPage() -> impl IntoView {
         },
     );
 
+    //EFFECTS
     Effect::new(move |_| {
         if let Some(result) = login_action.value().get() {
             match result {
@@ -61,11 +63,11 @@ pub fn LoginPage() -> impl IntoView {
                     if let Some(storage) = local_storage() {
                         let _ = storage.set_item("token", &token);
                     }
-                    set_error.set(None);
+                    error.set(None);
                     navigate("/profile", Default::default());
                 }
                 Err(e) => {
-                    set_error.set(Some(e));
+                    error.set(Some(e));
                 }
             }
         }
@@ -75,55 +77,57 @@ pub fn LoginPage() -> impl IntoView {
         if let Some(result) = register_action.value().get() {
             match result {
                 Ok(_) => {
-                    set_error.set(None);
-                    set_is_register_mode.set(false);
+                    error.set(None);
+                    is_register_mode.set(false);
                 }
                 Err(e) => {
-                    set_error.set(Some(e));
+                    error.set(Some(e));
                 }
             }
         }
     });
 
-    let on_login_submit = move |ev: ev::SubmitEvent| {
+    //EVENTS
+    let on_login = move |ev: ev::SubmitEvent| {
         ev.prevent_default();
-        if email.get().is_empty() || password.get().is_empty() {
-            set_error.set(Some("Почта или пароль не могут быть пустыми.".to_string()));
+        let email = email.get_untracked();
+        let password = password.get_untracked();
+        if email.is_empty() || password.is_empty() {
+            error.set(Some("Почта или пароль не могут быть пустыми.".to_string()));
             return;
         }
-        login_action.dispatch_local((email.get(), password.get()));
+        login_action.dispatch_local((email, password));
     };
 
-    let on_register_submit = move |ev: ev::SubmitEvent| {
+    let on_register = move |ev: ev::SubmitEvent| {
         ev.prevent_default();
-        if [first_name, last_name, user_name, email, password]
-            .iter()
-            .any(|v| v.get().is_empty())
-        {
-            set_error.set(Some("Все поля обязательны для заполнения.".to_string()));
+        let first_name = first_name.get_untracked();
+        let last_name = last_name.get_untracked();
+        let user_name = user_name.get_untracked();
+        let email = email.get_untracked();
+        let password = password.get_untracked();
+
+        if first_name.is_empty() || last_name.is_empty() || user_name.is_empty() || email.is_empty() || password.is_empty()  {
+            error.set(Some("Все поля обязательны для заполнения.".to_string()));
             return;
         }
         register_action.dispatch_local((
-            first_name.get(),
-            last_name.get(),
-            user_name.get(),
-            email.get(),
-            password.get(),
+            first_name,
+            last_name,
+            user_name,
+            email,
+            password,
         ));
     };
 
-    let to_register = move |ev: ev::MouseEvent| {
+    let change_form = move |ev: ev::MouseEvent| {
         ev.prevent_default();
-        set_is_register_mode.set(true);
-    };
-
-    let to_login = move |ev: ev::MouseEvent| {
-        ev.prevent_default();
-        set_is_register_mode.set(false);
+        is_register_mode.set(!is_register_mode.get_untracked());
     };
 
     let is_loading = move || login_action.pending().get() || register_action.pending().get();
 
+    //VIEW
     view! {
         <div
             class=style::login_page_container
@@ -140,11 +144,11 @@ pub fn LoginPage() -> impl IntoView {
             </div>
 
             <div class=format!("{} {}", style::title, style::register_title_shared)>
-                <h1 on:click=to_register class=style::register_title_h1>"Регистрация"</h1>
+                <h1 on:click=change_form class=style::register_title_h1>"Регистрация"</h1>
             </div>
 
             <div class=format!("{} {}", style::form_wrapper, style::login_form_wrapper)>
-                <form on:submit=on_login_submit class=style::login_form>
+                <form on:submit=on_login class=style::login_form>
                     <div class=style::loading_overlay style:display=move || if is_loading() { "flex" } else { "none" } >
                         <Spinner />
                     </div>
@@ -160,14 +164,14 @@ pub fn LoginPage() -> impl IntoView {
                     <button type="submit" prop:disabled=is_loading>
                         "Войти"
                     </button>
-                    <p on:click=to_register>
+                    <p on:click=change_form>
                         "Нет аккаунта? Зарегистрироваться"
                     </p>
                 </form>
             </div>
 
             <div class=format!("{} {}", style::form_wrapper, style::register_form_wrapper)>
-                <form on:submit=on_register_submit class=style::register_form>
+                <form on:submit=on_register class=style::register_form>
                     <div class=style::loading_overlay style:display=move || if is_loading() { "flex" } else { "none" } >
                         <Spinner />
                     </div>
@@ -195,7 +199,7 @@ pub fn LoginPage() -> impl IntoView {
                     <button type="submit" prop:disabled=is_loading>
                         "Зарегистрироваться"
                     </button>
-                    <p on:click=to_login>
+                    <p on:click=change_form>
                         "Уже есть аккаунт? Войти"
                     </p>
                 </form>
