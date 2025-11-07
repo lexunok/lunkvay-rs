@@ -1,37 +1,20 @@
-use crate::api;
+use crate::api::chat::get_all_chats;
 use crate::components::chat::messages::Messages;
 use crate::components::spinner::Spinner;
-use crate::models::chat::{Chat, ChatMessage, ChatType, SystemMessageType};
-use crate::models::user::User;
-use crate::utils::{API_BASE_URL, DOMAIN, get_current_user_id, get_token};
-use chrono::Utc;
+use crate::models::chat::Chat;
+use crate::utils::API_BASE_URL;
 use leptos::prelude::*;
 use stylance::import_style;
-use uuid::Uuid;
-use leptos::task::spawn_local;
-use leptos::logging::log;
+
 import_style!(style, "chats.module.scss");
 
 #[component]
 pub fn ChatsPage() -> impl IntoView {
-    let chats =
-        LocalResource::new(async move || api::chat::get_all_chats().await.unwrap_or_default());
-
+    //RESOURCES
+    let chats = LocalResource::new(async move || get_all_chats().await.unwrap_or_default());
+    //SIGNALS
     let (selected_chat, set_chat) = signal(None::<Chat>);
-
-    let messages_view = move || {
-        match selected_chat.get() {
-            Some(chat) => {
-                view! {
-                    <Messages chat = chat/>
-                }.into_any()
-            }
-            None => {
-                view! {<div class=style::no_chat_selected><h1>"Выберите чат чтобы начать общение"</h1></div>}.into_any()
-            }
-        }
-    };
-
+    //VIEW
     view! {
         <div class=style::container>
             <div class=style::left_panel>
@@ -104,7 +87,12 @@ pub fn ChatsPage() -> impl IntoView {
             </div>
 
             <div class=style::right_panel>
-                {messages_view}
+                {move || selected_chat.get().map(|chat| {
+                    view! {
+                        <Messages chat = chat/>
+                    }.into_any()
+                }).unwrap_or_else(|| view! {<div class=style::no_chat_selected><h1>"Выберите чат чтобы начать общение"</h1></div>}.into_any())
+                }
             </div>
         </div>
     }

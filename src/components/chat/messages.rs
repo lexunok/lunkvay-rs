@@ -2,39 +2,41 @@ use crate::{
     api::{self, chat_messages::CreateChatMessageRequest},
     components::spinner::Spinner,
     models::chat::{Chat, ChatMessage, SystemMessageType},
-    utils::{API_BASE_URL, DOMAIN, get_token},
+    utils::API_BASE_URL,
 };
 use leptos::prelude::*;
 use stylance::import_style;
-use leptos::logging::log;
 import_style!(style, "messages.module.scss");
 
 #[component]
 pub fn Messages(chat: Chat) -> impl IntoView {
-
+    //SIGNALS
     let chat_id = chat.id;
     let chat_image = format!("{}/chat-image/{}", API_BASE_URL, chat_id);
+    let message= RwSignal::new(String::new());
+    let messages = RwSignal::new(Vec::<ChatMessage>::new());
 
+    //RESOURCES
     let initial_messages = LocalResource::new(move || async move {
             api::chat_messages::get_chat_messages(chat_id, None, None, None)
                 .await
                 .unwrap_or_default()
     });
-    let message= RwSignal::new(String::new());
-
-    let messages = RwSignal::new(Vec::<ChatMessage>::new());
     
+    //EFFECTS
     Effect::new(move |_| {
         if let Some(initial) = initial_messages.get() {
             messages.set(initial);
         }
     });
 
+    //ACTIONS
     let send_message = Action::new_local(move |input: &CreateChatMessageRequest| {
         let input = input.clone();
         async move { api::chat_messages::create_chat_message(input).await }
     });
 
+    //EVENTS
     let on_submit = move || {
         let msg = message.get_untracked();
         if !msg.is_empty() {
@@ -47,7 +49,7 @@ pub fn Messages(chat: Chat) -> impl IntoView {
             send_message.dispatch(request);
         }
     };
-
+    //VIEW
     view! {
         <div class=style::chat_header>
             <img class=style::avatar src=chat_image onerror="this.onerror=null;this.src='/images/chatdefault.webp';"/>
