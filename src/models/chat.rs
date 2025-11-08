@@ -1,4 +1,3 @@
-use super::user::User;
 use chrono::NaiveDateTime;
 use serde::{Deserialize, Serialize};
 use serde_repr::{Deserialize_repr, Serialize_repr};
@@ -72,4 +71,31 @@ pub struct Chat {
     pub chat_type: ChatType,
     pub created_at: NaiveDateTime,
     pub member_count: i32,
+}
+
+#[derive(Clone, Debug, PartialEq, Eq, Deserialize, Serialize)]
+#[serde(rename_all = "PascalCase")]
+pub enum WsMessageType {
+    ReceiveMessage,
+    MessageUpdated,
+    MessageDeleted,
+    MessagePinned,
+    MemberUpdated,
+    MemberDeleted,
+    ChatUpdated,
+    ChatDeleted,
+}
+
+#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct PinnedMessageData {
+    pub message_id: Uuid,
+    pub is_pinned: bool,
+}
+
+#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct WsMessage {
+    pub r#type: WsMessageType,
+    pub data: serde_json::Value,
 }

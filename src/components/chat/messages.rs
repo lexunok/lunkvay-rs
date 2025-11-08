@@ -1,32 +1,91 @@
 use crate::{
     api::{self, chat_messages::CreateChatMessageRequest},
     components::spinner::Spinner,
-    models::chat::{Chat, ChatMessage, SystemMessageType},
-    utils::API_BASE_URL,
+    models::chat::{
+        Chat, ChatMessage, PinnedMessageData, SystemMessageType, WsMessage, WsMessageType,
+    },
+    utils::{API_BASE_URL, DOMAIN, get_current_user_id},
 };
+use codee::string::JsonSerdeCodec;
 use leptos::prelude::*;
+use leptos_use::{UseWebSocketReturn, use_websocket};
 use stylance::import_style;
+use uuid::Uuid;
+
 import_style!(style, "messages.module.scss");
 
 #[component]
 pub fn Messages(chat: Chat) -> impl IntoView {
-    //SIGNALS
     let chat_id = chat.id;
+
+    let UseWebSocketReturn { message, .. } = use_websocket::<(), WsMessage, JsonSerdeCodec>(
+        &format!("wss://{}/ws?roomId={}", DOMAIN, chat_id),
+    );
+
+    //SIGNALS
     let chat_image = format!("{}/chat-image/{}", API_BASE_URL, chat_id);
-    let message= RwSignal::new(String::new());
+    let messsage_input = RwSignal::new(String::new());
     let messages = RwSignal::new(Vec::<ChatMessage>::new());
 
     //RESOURCES
     let initial_messages = LocalResource::new(move || async move {
-            api::chat_messages::get_chat_messages(chat_id, None, None, None)
-                .await
-                .unwrap_or_default()
+        api::chat_messages::get_chat_messages(chat_id, None, None, None)
+            .await
+            .unwrap_or_default()
     });
-    
+
     //EFFECTS
     Effect::new(move |_| {
         if let Some(initial) = initial_messages.get() {
             messages.set(initial);
+        }
+    });
+
+    Effect::new(move |_| {
+        if let Some(ws_message) = message.get() {
+            match ws_message.r#type {
+                WsMessageType::ReceiveMessage => {
+                    if let Ok(mut chat_message) =
+                        serde_json::from_value::<ChatMessage>(ws_message.data)
+                    {
+                        if let Some(id) = get_current_user_id() {
+                            chat_message.is_my_message = chat_message.sender_id == id;
+                        }
+                        messages.update(|msgs| msgs.push(chat_message));
+                    }
+                }
+                WsMessageType::MessageUpdated => {
+                    if let Ok(updated_message) =
+                        serde_json::from_value::<ChatMessage>(ws_message.data)
+                    {
+                        messages.update(|msgs| {
+                            if let Some(msg) = msgs.iter_mut().find(|m| m.id == updated_message.id)
+                            {
+                                *msg = updated_message;
+                            }
+                        });
+                    }
+                }
+                WsMessageType::MessageDeleted => {
+                    if let Ok(message_id) = serde_json::from_value::<Uuid>(ws_message.data) {
+                        messages.update(|msgs| msgs.retain(|m| m.id != message_id));
+                    }
+                }
+                WsMessageType::MessagePinned => {
+                    if let Ok(pinned_data) =
+                        serde_json::from_value::<PinnedMessageData>(ws_message.data)
+                    {
+                        messages.update(|msgs| {
+                            if let Some(msg) =
+                                msgs.iter_mut().find(|m| m.id == pinned_data.message_id)
+                            {
+                                msg.is_pinned = pinned_data.is_pinned;
+                            }
+                        });
+                    }
+                }
+                _ => {}
+            }
         }
     });
 
@@ -38,14 +97,14 @@ pub fn Messages(chat: Chat) -> impl IntoView {
 
     //EVENTS
     let on_submit = move || {
-        let msg = message.get_untracked();
+        let msg = messsage_input.get_untracked();
         if !msg.is_empty() {
             let request = CreateChatMessageRequest {
                 chat_id: Some(chat_id),
                 message: msg,
                 receiver_id: None,
             };
-            message.set(String::new());
+            messsage_input.set(String::new());
             send_message.dispatch(request);
         }
     };
@@ -108,7 +167,7 @@ pub fn Messages(chat: Chat) -> impl IntoView {
             <input
                 type="text"
                 placeholder="Напишите сообщение..."
-                bind:value=message    
+                bind:value=messsage_input
                 on:keyup=move |ev| {
                     if ev.key() == "Enter" {
                         on_submit();
