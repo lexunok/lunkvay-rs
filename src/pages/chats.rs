@@ -43,7 +43,7 @@ pub fn ChatsPage() -> impl IntoView {
                                         class=style::chat_list_item
                                         style=move || {
                                             if selected_chat.get().map_or(false, |c| c.id == chat.id) {
-                                                "background-color: #4a6572;"
+                                                "background-color: #3366CC;"
                                             } else {
                                                 ""
                                             }

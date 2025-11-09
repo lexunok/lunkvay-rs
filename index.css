@@ -149,11 +149,11 @@ html, body, #root {
 }
 
 .last_message-70b5c55 {
-    color: #aaa;
     font-size: 14px;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
+    color: #ffffff;
 }
 
 .chat_meta-70b5c55 {
@@ -161,7 +161,7 @@ html, body, #root {
     flex-direction: column;
     align-items: flex-end;
     font-size: 12px;
-    color: #aaa;
+    color: #ffffff;
 }
 
 .spinner_container-70b5c55 {
@@ -1005,77 +1005,82 @@ html, body, #root {
     overflow-y: auto;
     display: flex;
     flex-direction: column;
-    gap: 5px;
+    gap: 2px;
     padding: 15px;
     position: relative;
 }
 
 .message_content-68e49c4 {
     padding: 10px 15px;
-    border-radius: 12px;
+    border-radius: 18px;
     max-width: 75%;
-    position: relative;
     font-size: 16px;
     word-wrap: break-word;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.25);
 
     p {
-        margin: 0 0 20px 0;
+        margin: 0;
         line-height: 1.5;
     }
+}
 
-    .time_and_status-68e49c4 {
-        position: absolute;
-        bottom: 8px;
-        right: 15px;
-        display: flex;
-        align-items: center;
-        gap: 5px;
-        font-size: 12px;
-        color: #c0c0c0;
-
-        svg {
-            width: 16px;
-            height: 16px;
-        }
-    }
+.my_message-68e49c4, .other_message-68e49c4 {
+    display: flex;
+    flex-direction: column;
+    margin-bottom: 10px;
 }
 
 .my_message-68e49c4 {
     align-self: flex-end;
-    display: flex;
-    flex-direction: column;
     align-items: flex-end;
 
     .message_content-68e49c4 {
-        background-color: #4A6572;
-        border-radius: 12px 12px 0 12px;
+        background-color: #3366CC;
+        color: #ffffff;
+        border-radius: 18px 18px 4px 18px;
+
+        p {
+            text-align: right;
+        }
     }
 }
 
 .other_message-68e49c4 {
     align-self: flex-start;
-    display: flex;
-    flex-direction: column;
     align-items: flex-start;
 
     .message_content-68e49c4 {
-        background-color: #3a3a3a;
-        border-radius: 12px 12px 12px 0;
+        background-color: #444444;
+        color: #f0f0f0;
+        border-radius: 4px 18px 18px 18px;
+    }
+}
+
+.time_and_status-68e49c4 {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 12px;
+    color: #a0a0a0;
+    margin-top: 6px;
+    padding: 0 5px;
+
+    svg {
+        width: 16px;
+        height: 16px;
     }
 }
 
 .sender_name-68e49c4 {
     font-size: 13px;
     font-weight: bold;
-    color: #b0b0b0;
+    color: #87CEEB;
     margin-bottom: 4px;
-    margin-left: 5px;
+    margin-left: 10px;
 }
 
 .edited_indicator-68e49c4 {
     font-style: italic;
-    color: #a0a0a0;
-    margin-right: 5px;
 }
 
 .system_message-68e49c4 {
@@ -1090,7 +1095,7 @@ html, body, #root {
     display: flex;
     gap: 10px;
     align-items: center;
-    padding: 20px 15px 0px 15px;
+    padding: 20px 15px;
     border-top: 1px solid #444;
 
     form {
@@ -1167,6 +1172,26 @@ html, body, #root {
     display: flex;
     justify-content: center;
     z-index: 1;
+}
+
+.date_separator-68e49c4 {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin: 15px 0;
+
+    span {
+        background-color: #3a3a3a;
+        color: #c0c0c0;
+        padding: 5px 12px;
+        border-radius: 12px;
+        font-size: 13px;
+        font-weight: bold;
+    }
+}
+
+.pin_icon-68e49c4 {
+    transform: rotate(30deg);
 }
 
 
