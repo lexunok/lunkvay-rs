@@ -1,0 +1,170 @@
+.backdrop {
+  position: fixed;
+  inset: 0;
+  background-color: rgba(0, 0, 0, 0.7);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.content {
+  background-color: #303030;
+  padding: 30px;
+  border-radius: 12px;
+  width: 100%;
+  max-width: 500px;
+  display: flex;
+  flex-direction: column;
+
+  h2 {
+    font-size: 22px;
+    font-weight: bold;
+    color: #e2ddbd;
+    margin: 0;
+    padding-bottom: 20px;
+    border-bottom: 1px solid #444;
+  }
+}
+
+.image_upload_section {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 15px;
+  margin: 10px 0 20px;
+}
+
+.image_preview {
+  width: 120px;
+  height: 120px;
+  border-radius: 50%;
+  overflow: hidden;
+  border: 3px solid #444;
+
+  img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+}
+
+.file_input {
+  color: #e2ddbd;
+
+  &::file-selector-button {
+    padding: 8px 12px;
+    font-weight: bold;
+    background-color: #444;
+    color: #e2ddbd;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+
+    &:hover {
+      background-color: #555;
+    }
+  }
+}
+
+.delete_image_button {
+  background-color: transparent;
+  color: #ff6b6b;
+  border: 1px solid #ff6b6b;
+  padding: 8px 12px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: bold;
+  font-size: 14px;
+  transition: all 0.2s ease;
+
+  &:hover {
+    background-color: #ff6b6b;
+    color: #1a1a1a;
+  }
+}
+
+.form_field {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 20px;
+
+  label {
+    font-size: 16px;
+    font-weight: bold;
+    color: #aaa;
+  }
+
+  input,
+  textarea {
+    background-color: #2a2a2a;
+    color: #e2ddbd;
+    border: 1px solid #444;
+    padding: 12px;
+    font-size: 16px;
+    border-radius: 8px;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+    resize: vertical;
+    font-family: inherit;
+
+    &:focus {
+      outline: none;
+      border-color: #e2ddbd;
+      box-shadow: 0 0 0 3px rgba(226, 221, 189, 0.1);
+    }
+  }
+}
+
+.form_actions {
+  display: flex;
+  gap: 15px;
+  justify-content: space-between;
+  padding-top: 20px;
+  margin-top: 10px;
+  border-top: 1px solid #444;
+
+  button {
+    padding: 12px 20px;
+    font-weight: bold;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 16px;
+    transition: all 0.2s ease;
+
+    &:hover {
+      opacity: 0.9;
+    }
+
+    &:active {
+      transform: scale(0.96);
+    }
+
+    &[type="submit"] {
+      background-color: #3366CC;
+      color: #ffffff;
+    }
+  }
+}
+
+.delete_chat_button {
+    background-color: #ff6b6b;
+    color: #1a1a1a;
+    padding: 12px 20px;
+    font-weight: bold;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 16px;
+    transition: all 0.2s ease;
+
+    &:hover {
+        opacity: 0.9;
+    }
+
+    &:active {
+        transform: scale(0.96);
+    }
+}

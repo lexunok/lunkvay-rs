@@ -6,7 +6,7 @@ use crate::{
             UpdatePinChatMessageRequest,
         },
     },
-    components::spinner::Spinner,
+    components::{chat::chat_settings_window::ChatSettingsWindow, spinner::Spinner},
     models::chat::{
         Chat, ChatMessage, ChatType, PinnedMessageData, SystemMessageType, WsMessage, WsMessageType,
     },
@@ -43,8 +43,13 @@ struct ContextMenuState {
 }
 
 #[component]
-pub fn Messages(chat: Chat) -> impl IntoView {
+pub fn Messages(
+    chat: Chat,
+    set_chat: WriteSignal<Option<Chat>>,
+    refetch_chats: Callback<()>,
+) -> impl IntoView {
     let chat_id = chat.id;
+    let chat_cloned = chat.clone();
 
     let UseWebSocketReturn { message, .. } = use_websocket::<(), WsMessage, JsonSerdeCodec>(
         &format!("wss://{}/ws?roomId={}", DOMAIN, chat_id),
@@ -62,6 +67,7 @@ pub fn Messages(chat: Chat) -> impl IntoView {
     let context_menu_state: RwSignal<Option<ContextMenuState>> = RwSignal::new(None);
     let editing_message_id: RwSignal<Option<Uuid>> = RwSignal::new(None);
     let edit_input = RwSignal::new(String::new());
+    let (show_chat_settings_window, set_show_chat_settings_window) = signal(false);
 
     //RESOURCES
     let initial_messages = LocalResource::new(move || async move {
@@ -143,8 +149,8 @@ pub fn Messages(chat: Chat) -> impl IntoView {
                     if let Ok(mut chat_message) =
                         serde_json::from_value::<ChatMessage>(ws_message.data)
                     {
-                        if let Some(id) = get_current_user_id() {
-                            chat_message.is_my_message = chat_message.sender_id == id;
+                        if chat_message.sender_id == get_current_user_id() {
+                            chat_message.is_my_message = true;
                         }
                         if let Some(messages_area) = messages_area_ref.get() {
                             let should_scroll = messages_area.scroll_top()
@@ -195,6 +201,28 @@ pub fn Messages(chat: Chat) -> impl IntoView {
                             pinned_messages.refetch();
                         }
                     }
+                }
+                WsMessageType::ChatUpdated => {
+                    if let Ok(chat) = serde_json::from_value::<Chat>(ws_message.data) {
+                        if let Some(messages_area) = messages_area_ref.get() {
+                            if let Some(chat_message) = chat.last_message.clone() {
+                                let should_scroll = messages_area.scroll_top()
+                                    + messages_area.client_height()
+                                    >= messages_area.scroll_height() - 200;
+                                messages.update(|msgs| msgs.push(chat_message));
+                                if should_scroll {
+                                    request_animation_frame(move || {
+                                        messages_area.set_scroll_top(messages_area.scroll_height());
+                                    });
+                                }
+                            }
+                        }
+                        set_chat.set(Some(chat));
+                    }
+                }
+                WsMessageType::ChatDeleted => {
+                    refetch_chats.run(());
+                    set_chat.set(None);
                 }
                 _ => {}
             }
@@ -290,11 +318,18 @@ pub fn Messages(chat: Chat) -> impl IntoView {
         }
     };
 
+    let chat_name = chat.name.unwrap_or_default();
+    let chat_type_cloned = chat.chat_type.clone();
     view! {
         <div class=style::messages_container>
             <div class=style::chat_header>
                 <img class=style::avatar src=chat_image onerror="this.onerror=null;this.src='/images/chatdefault.webp';"/>
-                <span class=style::chat_name>{chat.name.unwrap_or_default()}</span>
+                <span class=style::chat_name>{chat_name}</span>
+                <Show when=move || chat.chat_type.clone() == ChatType::Group>
+                    <button class=style::header_button on:click=move |_| set_show_chat_settings_window.set(true)>
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M6.45455 19L2 22.5V4C2 3.44772 2.44772 3 3 3H21C21.5523 3 22 3.44772 22 4V18C22 18.5523 21.5523 19 21 19H6.45455ZM8.14499 12.071L7.16987 12.634L8.16987 14.366L9.1459 13.8025C9.64746 14.3133 10.2851 14.69 11 14.874V16H13V14.874C13.7149 14.69 14.3525 14.3133 14.8541 13.8025L15.8301 14.366L16.8301 12.634L15.855 12.071C15.9495 11.7301 16 11.371 16 11C16 10.629 15.9495 10.2699 15.855 9.92901L16.8301 9.36602L15.8301 7.63397L14.8541 8.19748C14.3525 7.68674 13.7149 7.31003 13 7.12602V6H11V7.12602C10.2851 7.31003 9.64746 7.68674 9.1459 8.19748L8.16987 7.63397L7.16987 9.36602L8.14499 9.92901C8.0505 10.2699 8 10.629 8 11C8 11.371 8.0505 11.7301 8.14499 12.071ZM12 13C10.8954 13 10 12.1046 10 11C10 9.89543 10.8954 9 12 9C13.1046 9 14 9.89543 14 11C14 12.1046 13.1046 13 12 13Z"></path></svg>
+                    </button>
+                </Show>
                 <button class=style::header_button on:click=move |_| show_pinned.update(|v| *v = !*v)>
                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M22.3126 10.1753L20.8984 11.5895L20.1913 10.8824L15.9486 15.125L15.2415 18.6606L13.8273 20.0748L9.58466 15.8321L4.63492 20.7819L3.2207 19.3677L8.17045 14.4179L3.92781 10.1753L5.34202 8.76107L8.87756 8.05396L13.1202 3.81132L12.4131 3.10422L13.8273 1.69L22.3126 10.1753Z"></path></svg>
                 </button>
@@ -347,8 +382,7 @@ pub fn Messages(chat: Chat) -> impl IntoView {
                                     } else {
                                         style::other_message.to_string()
                                     };
-                                    let chat_type = chat.chat_type.clone();
-
+                                    let chat_type_cloned_2 = chat_type_cloned.clone();
                                     let created_at = msg.created_at;
                                     let now = Utc::now();
                                     let time_str = if created_at.date() == now.date_naive() {
@@ -380,7 +414,7 @@ pub fn Messages(chat: Chat) -> impl IntoView {
                                                     }
                                                 }
                                             >
-                                                <Show when=move || !msg.is_my_message && chat_type != ChatType::Personal>
+                                                <Show when=move || !msg.is_my_message && chat_type_cloned_2.clone() != ChatType::Personal>
                                                     <div class=style::sender_name>{msg.sender_user_name.clone()}</div>
                                                 </Show>
 
@@ -520,6 +554,13 @@ pub fn Messages(chat: Chat) -> impl IntoView {
                     </button>
                 </form>
             </div>
+            <Show when=move || show_chat_settings_window.get()>
+                <ChatSettingsWindow
+                    chat=chat_cloned.clone()
+                    set_show_chat_settings_window=set_show_chat_settings_window
+                    refetch_chats=refetch_chats
+                />
+            </Show>
         </div>
     }
 }

@@ -23,9 +23,34 @@
 .header {
     padding-bottom: 15px;
     border-bottom: 1px solid #444;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
     .title {
         font-size: 24px;
         font-weight: bold;
+    }
+}
+
+.create_chat_button {
+    background-color: transparent;
+    border: none;
+    color: #e2ddbd;
+    width: 40px;
+    height: 40px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    cursor: pointer;
+    transition: color 0.2s ease;
+
+    &:hover {
+        color: #ffffff;
+    }
+
+    svg {
+        width: 32px;
+        height: 32px;
     }
 }
 

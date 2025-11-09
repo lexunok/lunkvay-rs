@@ -1,4 +1,5 @@
 use crate::api::chat::get_all_chats;
+use crate::components::chat::create_chat_window::CreateChatWindow;
 use crate::components::chat::messages::Messages;
 use crate::components::spinner::Spinner;
 use crate::models::chat::Chat;
@@ -14,12 +15,18 @@ pub fn ChatsPage() -> impl IntoView {
     let chats = LocalResource::new(async move || get_all_chats().await.unwrap_or_default());
     //SIGNALS
     let (selected_chat, set_chat) = signal(None::<Chat>);
+    let (show_create_chat_window, set_show_create_chat_window) = signal(false);
     //VIEW
     view! {
         <div class=style::container>
             <div class=style::left_panel>
                 <div class=style::header>
                     <h1 class=style::title>"Чаты"</h1>
+                    <button class=style::create_chat_button on:click=move |_| set_show_create_chat_window.set(true)>
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm5 11h-4v4h-2v-4H7v-2h4V7h2v4h4v2z"></path>
+                        </svg>
+                    </button>
                 </div>
                 <div class=style::search_bar>
                     <svg class=style::search_icon xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
@@ -89,11 +96,18 @@ pub fn ChatsPage() -> impl IntoView {
             <div class=style::right_panel>
                 {move || selected_chat.get().map(|chat| {
                     view! {
-                        <Messages chat = chat/>
+                        <Messages chat = chat set_chat=set_chat refetch_chats=Callback::new(move |()| chats.refetch())/>
                     }.into_any()
                 }).unwrap_or_else(|| view! {<div class=style::no_chat_selected><h1>"Выберите чат чтобы начать общение"</h1></div>}.into_any())
                 }
             </div>
+
+            <Show when=move || show_create_chat_window.get()>
+                <CreateChatWindow
+                    set_show_create_chat_window=set_show_create_chat_window
+                    refetch_chats=Callback::new(move |()| chats.refetch())
+                />
+            </Show>
         </div>
     }
 }

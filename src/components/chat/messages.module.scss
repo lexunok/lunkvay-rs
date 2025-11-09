@@ -40,8 +40,8 @@
         transition: background-color 0.2s ease, color 0.2s ease;
 
         svg {
-            width: 18px;
-            height: 18px;
+            width: 28px;
+            height: 28px;
         }
 
         &:hover {
@@ -299,10 +299,6 @@
         font-size: 13px;
         font-weight: bold;
     }
-}
-
-.pin_icon {
-    transform: rotate(30deg);
 }
 
 .context_menu {
