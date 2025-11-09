@@ -18,4 +18,4 @@ uuid = { version = "1.8.0", features = ["serde", "v4", "js"] }
 jsonwebtoken = "9.3.0"
 chrono = { version = "0.4.38", features = ["serde"] }
 serde_repr = "0.1.20"
-leptos-use = { version = "0.16.3", features = ["use_websocket", "use_infinite_scroll"] }
+leptos-use = { version = "0.16.3", features = ["use_websocket", "use_infinite_scroll", "use_event_listener"] }

@@ -5,13 +5,6 @@ use uuid::Uuid;
 
 #[derive(Clone, Debug, PartialEq, Deserialize, Serialize)]
 #[serde(rename_all = "camelCase")]
-pub struct CreatePersonalChatRequest {
-    pub interlocutor: Uuid,
-    pub message: String,
-}
-
-#[derive(Clone, Debug, PartialEq, Deserialize, Serialize)]
-#[serde(rename_all = "camelCase")]
 pub struct CreateGroupChatRequest {
     pub name: String,
     pub members: Vec<Uuid>,

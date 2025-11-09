@@ -46,6 +46,7 @@ pub struct ChatMessage {
     pub is_pinned: bool,
     pub created_at: NaiveDateTime,
     pub updated_at: Option<NaiveDateTime>,
+    pub pinned_at: Option<NaiveDateTime>,
     pub is_my_message: bool,
 }
 
@@ -91,6 +92,7 @@ pub enum WsMessageType {
 pub struct PinnedMessageData {
     pub message_id: Uuid,
     pub is_pinned: bool,
+    pub updated_at: Option<NaiveDateTime>,
 }
 
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]

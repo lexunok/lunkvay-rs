@@ -1,5 +1,11 @@
 use crate::{
-    api::{self, chat_messages::CreateChatMessageRequest},
+    api::{
+        self,
+        chat_messages::{
+            CreateChatMessageRequest, DeleteChatMessageRequest, UpdateEditChatMessageRequest,
+            UpdatePinChatMessageRequest,
+        },
+    },
     components::spinner::Spinner,
     models::chat::{
         Chat, ChatMessage, ChatType, PinnedMessageData, SystemMessageType, WsMessage, WsMessageType,
@@ -9,9 +15,10 @@ use crate::{
 use chrono::{NaiveDate, Utc};
 use codee::string::JsonSerdeCodec;
 use leptos::html::Div;
-use leptos::prelude::*;
+use leptos::{ev, prelude::*};
 use leptos_use::{
-    UseInfiniteScrollOptions, UseWebSocketReturn, use_infinite_scroll_with_options, use_websocket,
+    UseInfiniteScrollOptions, UseWebSocketReturn, use_event_listener,
+    use_infinite_scroll_with_options, use_websocket,
 };
 use stylance::import_style;
 use uuid::Uuid;
@@ -24,6 +31,15 @@ const PAGE_SIZE: u32 = 20;
 enum ListItem {
     Message(ChatMessage),
     DateSeparator(NaiveDate),
+}
+
+#[derive(Clone, Debug, PartialEq)]
+struct ContextMenuState {
+    message_id: Uuid,
+    is_my_message: bool,
+    is_pinned: bool,
+    x: i32,
+    y: i32,
 }
 
 #[component]
@@ -42,10 +58,20 @@ pub fn Messages(chat: Chat) -> impl IntoView {
     let has_more_messages = RwSignal::new(true);
     let messages_area_ref = NodeRef::<Div>::new();
     let is_loading_more = RwSignal::new(false);
+    let show_pinned = RwSignal::new(false);
+    let context_menu_state: RwSignal<Option<ContextMenuState>> = RwSignal::new(None);
+    let editing_message_id: RwSignal<Option<Uuid>> = RwSignal::new(None);
+    let edit_input = RwSignal::new(String::new());
 
     //RESOURCES
     let initial_messages = LocalResource::new(move || async move {
         api::chat_messages::get_chat_messages(chat_id, None, Some(1), Some(PAGE_SIZE))
+            .await
+            .unwrap_or_default()
+    });
+
+    let pinned_messages = LocalResource::new(move || async move {
+        api::chat_messages::get_chat_messages(chat_id, Some(true), Some(1), Some(5))
             .await
             .unwrap_or_default()
     });
@@ -55,6 +81,44 @@ pub fn Messages(chat: Chat) -> impl IntoView {
         let input = input.clone();
         async move { api::chat_messages::create_chat_message(input).await }
     });
+
+    let delete_message_action = Action::new_local(move |message_id: &Uuid| {
+        let message_id = *message_id;
+        async move {
+            let req = DeleteChatMessageRequest {
+                chat_id,
+                message_id,
+            };
+            let _ = api::chat_messages::delete_chat_message(req).await;
+        }
+    });
+
+    let pin_message_action = Action::new_local(move |(message_id, is_pinned): &(Uuid, bool)| {
+        let message_id = *message_id;
+        let is_pinned = *is_pinned;
+        async move {
+            let req = UpdatePinChatMessageRequest {
+                chat_id,
+                message_id,
+                is_pinned,
+            };
+            let _ = api::chat_messages::update_pin_chat_message(req).await;
+        }
+    });
+
+    let edit_message_action =
+        Action::new_local(move |(message_id, new_message): &(Uuid, String)| {
+            let message_id = *message_id;
+            let new_message = new_message.clone();
+            async move {
+                let req = UpdateEditChatMessageRequest {
+                    chat_id,
+                    message_id,
+                    new_message,
+                };
+                let _ = api::chat_messages::update_edit_chat_message(req).await;
+            }
+        });
 
     //EFFECTS
     Effect::new(move |_| {
@@ -99,10 +163,13 @@ pub fn Messages(chat: Chat) -> impl IntoView {
                     if let Ok(updated_message) =
                         serde_json::from_value::<ChatMessage>(ws_message.data)
                     {
+                        editing_message_id.set(None);
+                        context_menu_state.set(None);
                         messages.update(|msgs| {
-                            if let Some(msg) = msgs.iter_mut().find(|m| m.id == updated_message.id)
+                            if let Some(pos) = msgs.iter().position(|m| m.id == updated_message.id)
                             {
-                                *msg = updated_message;
+                                msgs[pos] = updated_message;
+                                *msgs = msgs.clone();
                             }
                         });
                     }
@@ -121,12 +188,30 @@ pub fn Messages(chat: Chat) -> impl IntoView {
                                 msgs.iter_mut().find(|m| m.id == pinned_data.message_id)
                             {
                                 msg.is_pinned = pinned_data.is_pinned;
+                                msg.updated_at = pinned_data.updated_at;
                             }
                         });
+                        if show_pinned.get_untracked() {
+                            pinned_messages.refetch();
+                        }
                     }
                 }
                 _ => {}
             }
+        }
+    });
+
+    Effect::new(move |_| {
+        if show_pinned.get() {
+            pinned_messages.refetch();
+        }
+    });
+
+    Effect::new(move |_| {
+        if let Some(element) = messages_area_ref.get() {
+            let _ = use_event_listener(element, ev::click, move |_| {
+                context_menu_state.set(None);
+            });
         }
     });
 
@@ -177,7 +262,6 @@ pub fn Messages(chat: Chat) -> impl IntoView {
         UseInfiniteScrollOptions::default().direction(leptos_use::core::Direction::Top),
     );
 
-    // DERIVED SIGNALS
     let messages_with_dates = Memo::new(move |_| {
         let mut result: Vec<ListItem> = Vec::new();
         let mut last_date: Option<NaiveDate> = None;
@@ -193,7 +277,6 @@ pub fn Messages(chat: Chat) -> impl IntoView {
         result
     });
 
-    //EVENTS
     let on_submit = move || {
         let msg = messsage_input.get_untracked();
         if !msg.is_empty() {
@@ -207,12 +290,42 @@ pub fn Messages(chat: Chat) -> impl IntoView {
         }
     };
 
-    //VIEW
     view! {
         <div class=style::messages_container>
             <div class=style::chat_header>
                 <img class=style::avatar src=chat_image onerror="this.onerror=null;this.src='/images/chatdefault.webp';"/>
                 <span class=style::chat_name>{chat.name.unwrap_or_default()}</span>
+                <button class=style::header_button on:click=move |_| show_pinned.update(|v| *v = !*v)>
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M22.3126 10.1753L20.8984 11.5895L20.1913 10.8824L15.9486 15.125L15.2415 18.6606L13.8273 20.0748L9.58466 15.8321L4.63492 20.7819L3.2207 19.3677L8.17045 14.4179L3.92781 10.1753L5.34202 8.76107L8.87756 8.05396L13.1202 3.81132L12.4131 3.10422L13.8273 1.69L22.3126 10.1753Z"></path></svg>
+                </button>
+            </div>
+
+            <div
+                class=move || {
+                    let mut classes = vec![style::pinned_messages_bar.to_string()];
+                    if show_pinned.get() {
+                        classes.push(style::show.to_string());
+                    }
+                    classes.join(" ")
+                }
+            >
+                {move || pinned_messages.get().map(|msgs| view! {
+                    <For
+                        each=move || msgs.clone()
+                        key=|msg| msg.id
+                        children=|msg| {
+                            view! {
+                                <div class=style::pinned_message_item>
+                                    <strong>{msg.sender_user_name.clone()}</strong>
+                                    <p>{msg.message.clone()}</p>
+                                    <Show when=move || msg.pinned_at.is_some()>
+                                        <span class=style::pinned_at_time>{msg.pinned_at.unwrap().format("%d.%m.%y %H:%M").to_string()}</span>
+                                    </Show>
+                                </div>
+                            }
+                        }
+                    />
+                })}
             </div>
 
             <div class=style::messages_area node_ref=messages_area_ref>
@@ -223,8 +336,8 @@ pub fn Messages(chat: Chat) -> impl IntoView {
                      <For
                         each=move || messages_with_dates.get()
                         key=|item| match item {
-                            ListItem::Message(msg) => msg.id.to_string(),
-                            ListItem::DateSeparator(date) => date.to_string(),
+                            ListItem::Message(msg) => (msg.id.to_string(), msg.updated_at.unwrap_or_default().to_string().clone()),
+                            ListItem::DateSeparator(date) => (date.to_string(), date.to_string()),
                         }
                         children=move |item| {
                             match item {
@@ -246,16 +359,67 @@ pub fn Messages(chat: Chat) -> impl IntoView {
 
                                     match msg.system_message_type {
                                         SystemMessageType::None => view! {
-                                            <div class=message_class>
+                                            <div
+                                                class=message_class
+                                                on:contextmenu=move |ev| {
+                                                    ev.prevent_default();
+                                                    if let Some(area) = messages_area_ref.get() {
+                                                        let area_rect = area.get_bounding_client_rect();
+                                                        let x_offset = -150;
+                                                        let y_offset = -60;
+                                                        let x = ev.client_x() - area_rect.left() as i32 + area.scroll_left() as i32 + x_offset;
+                                                        let y = ev.client_y() - area_rect.top() as i32 + area.scroll_top() as i32 + y_offset;
+
+                                                        context_menu_state.set(Some(ContextMenuState {
+                                                            message_id: msg.id,
+                                                            is_my_message: msg.is_my_message,
+                                                            is_pinned: msg.is_pinned,
+                                                            x,
+                                                            y,
+                                                        }));
+                                                    }
+                                                }
+                                            >
                                                 <Show when=move || !msg.is_my_message && chat_type != ChatType::Personal>
                                                     <div class=style::sender_name>{msg.sender_user_name.clone()}</div>
                                                 </Show>
-                                                <div class=style::message_content>
-                                                    <p>{msg.message.clone()}</p>
-                                                </div>
+
+                                                <Show
+                                                    when=move || editing_message_id.get() != Some(msg.id)
+                                                    fallback=move || {
+                                                        let msg_id = msg.id;
+                                                        view! {
+                                                            <div class=style::edit_container>
+                                                                <input
+                                                                    type="text"
+                                                                    class=style::edit_input
+                                                                    bind:value=edit_input
+                                                                    on:keyup=move |ev| {
+                                                                        if ev.key() == "Enter" {
+                                                                            edit_message_action.dispatch((msg_id, edit_input.get()));
+                                                                        } else if ev.key() == "Escape" {
+                                                                            editing_message_id.set(None);
+                                                                        }
+                                                                    }
+                                                                />
+                                                                <div class=style::edit_buttons>
+                                                                    <button on:click=move |_| {
+                                                                        edit_message_action.dispatch((msg_id, edit_input.get()));
+                                                                    }>{"Сохранить"}</button>
+                                                                    <button on:click=move |_| editing_message_id.set(None)>{"Отмена"}</button>
+                                                                </div>
+                                                            </div>
+                                                        }
+                                                    }
+                                                >
+                                                    <div class=style::message_content>
+                                                        <p>{msg.message.clone()}</p>
+                                                    </div>
+                                                </Show>
+
                                                 <div class=style::time_and_status>
                                                     <Show when=move || msg.is_pinned>
-                                                        <svg class=style::pin_icon xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor"><path d="M9.5 1.118a.5.5 0 0 0-.5-.5H6a.5.5 0 0 0-.5.5v1.382c-1.21.225-2.233.8-2.932 1.682A4.499 4.499 0 0 0 .5 7.5c0 1.63.8 3.037 2.012 3.882.24.168.49.32.74.458V15.5a.5.5 0 0 0 .5.5h5a.5.5 0 0 0 .5-.5V11.84a5.513 5.513 0 0 0 .74-.458A4.499 4.499 0 0 0 14.5 7.5a4.499 4.499 0 0 0-2.068-3.318c-.699-.882-1.722-1.457-2.932-1.682V1.118Z"></path></svg>
+                                                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M22.3126 10.1753L20.8984 11.5895L20.1913 10.8824L15.9486 15.125L15.2415 18.6606L13.8273 20.0748L9.58466 15.8321L4.63492 20.7819L3.2207 19.3677L8.17045 14.4179L3.92781 10.1753L5.34202 8.76107L8.87756 8.05396L13.1202 3.81132L12.4131 3.10422L13.8273 1.69L22.3126 10.1753Z"></path></svg>
                                                     </Show>
                                                     <Show when=move || msg.is_edited>
                                                         <span class=style::edited_indicator>"(изм.)"</span>
@@ -299,6 +463,34 @@ pub fn Messages(chat: Chat) -> impl IntoView {
                         }
                     />
                 </Suspense>
+                <Show when=move || context_menu_state.get().is_some()>
+                    {move || context_menu_state.get().map(|state| {
+                        view! {
+                            <div
+                                class=style::context_menu
+                                style=format!("left: {}px; top: {}px;", state.x, state.y)
+                            >
+                                <button on:click=move |_| {
+                                    pin_message_action.dispatch((state.message_id, !state.is_pinned));
+                                    context_menu_state.set(None);
+                                }>{if state.is_pinned {"Открепить"} else {"Закрепить"}}</button>
+                                <Show when=move || state.is_my_message>
+                                    <button on:click=move |_| {
+                                        if let Some(msg) = messages.get().iter().find(|m| m.id == state.message_id).cloned() {
+                                            edit_input.set(msg.message);
+                                            editing_message_id.set(Some(state.message_id));
+                                        }
+                                        context_menu_state.set(None);
+                                    }>{"Редактировать"}</button>
+                                    <button on:click=move |_| {
+                                        delete_message_action.dispatch(state.message_id);
+                                        context_menu_state.set(None);
+                                    }>{"Удалить"}</button>
+                                </Show>
+                            </div>
+                        }
+                    })}
+                </Show>
             </div>
 
             <div class=style::message_input_area>
