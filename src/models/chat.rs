@@ -37,7 +37,7 @@ pub struct ChatMessage {
     pub id: Uuid,
     pub sender_id: Uuid,
     pub sender_user_name: String,
-    pub sender_first_name: String,
+    pub sender_first_name: Option<String>,
     pub sender_last_name: Option<String>,
     pub sender_is_online: Option<bool>,
     pub system_message_type: SystemMessageType,
