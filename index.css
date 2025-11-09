@@ -999,8 +999,7 @@ html, body, #root {
 
 .card-93eb935 {
   display: flex;
-  align-items: center;
-  justify-content: space-between;
+  flex-direction: column;
   padding: 15px;
   margin: 5px;
   background-color: #2a2a2a;
@@ -1012,6 +1011,13 @@ html, body, #root {
     background-color: #3a3a3a;
     transform: translateY(-2px);
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  }
+
+  .card_header_content-93eb935 {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
   }
 
 
@@ -1109,14 +1115,14 @@ html, body, #root {
 
   .label_input_container-93eb935 {
     display: flex;
-    align-items: center; 
-    gap: 8px; 
+    align-items: center;
+    gap: 8px;
     margin-left: auto;
     max-width: 250px;
   }
 
   .label_input-93eb935 {
-    padding: 6px 10px; 
+    padding: 6px 10px;
     border: 1px solid #555;
     border-radius: 5px;
     background-color: #3a3a3a;
@@ -1137,7 +1143,7 @@ html, body, #root {
     padding: 5px;
     transition: color 0.2s ease;
     margin-right: 15px;
-    
+
     &:hover {
       color: #ff6b6b;
     }
@@ -1146,6 +1152,44 @@ html, body, #root {
       width: 24px;
       height: 24px;
       display: block;
+    }
+  }
+
+  .message_input_area-93eb935 {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    margin-top: 10px;
+    width: 100%;
+
+    input {
+      flex-grow: 1;
+      background-color: #3a3a3a;
+      color: #e2ddbd;
+      border: 1px solid #555;
+      padding: 8px 12px;
+      border-radius: 8px;
+      font-size: 14px;
+
+      &:focus {
+        outline: none;
+        border-color: #e2ddbd;
+      }
+    }
+  }
+
+  .send_message_button-93eb935 {
+    background-color: #3366CC;
+    color: #ffffff;
+    border: none;
+    padding: 8px 15px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: bold;
+    transition: background-color 0.2s ease;
+
+    &:hover {
+      background-color: #4477DD;
     }
   }
 }

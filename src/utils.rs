@@ -31,9 +31,6 @@ pub fn get_current_user_id() -> Option<Uuid> {
 pub fn local_storage() -> Option<Storage> {
     window().local_storage().ok().flatten()
 }
-pub fn get_token() -> Option<String> {
-    local_storage()?.get_item("token").ok().flatten()
-}
 pub fn has_token() -> bool {
     local_storage()
         .and_then(|storage| storage.get_item("token").ok().flatten())
