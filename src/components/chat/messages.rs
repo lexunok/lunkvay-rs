@@ -1,24 +1,23 @@
 use crate::{
-    api::{
-        self,
-        chat_messages::{
-            CreateChatMessageRequest, DeleteChatMessageRequest, UpdateEditChatMessageRequest,
-            UpdatePinChatMessageRequest,
+    api::chat_messages::*,
+    components::{
+        chat::{
+            chat_members_panel::ChatMembersPanel, chat_settings_window::ChatSettingsWindow,
         },
+        spinner::Spinner,
     },
-    components::{chat::chat_settings_window::ChatSettingsWindow, spinner::Spinner},
     models::chat::{
         Chat, ChatMessage, ChatType, PinnedMessageData, SystemMessageType, WsMessage, WsMessageType,
     },
-    utils::{API_BASE_URL, DOMAIN, get_current_user_id},
+    utils::{get_current_user_id, API_BASE_URL, DOMAIN},
 };
 use chrono::{NaiveDate, Utc};
 use codee::string::JsonSerdeCodec;
 use leptos::html::Div;
 use leptos::{ev, prelude::*};
 use leptos_use::{
-    UseInfiniteScrollOptions, UseWebSocketReturn, use_event_listener,
-    use_infinite_scroll_with_options, use_websocket,
+    use_event_listener, use_infinite_scroll_with_options, use_websocket,
+    UseInfiniteScrollOptions, UseWebSocketReturn,
 };
 use stylance::import_style;
 use uuid::Uuid;
@@ -51,9 +50,8 @@ pub fn Messages(
     let chat_id = chat.id;
     let chat_cloned = chat.clone();
 
-    let UseWebSocketReturn { message, .. } = use_websocket::<(), WsMessage, JsonSerdeCodec>(
-        &format!("wss://{}/ws?roomId={}", DOMAIN, chat_id),
-    );
+    let UseWebSocketReturn { message, .. } =
+        use_websocket::<(), WsMessage, JsonSerdeCodec>(&format!("wss://{}/ws?roomId={}", DOMAIN, chat_id));
 
     //SIGNALS
     let chat_image = format!("{}/chat-image/{}", API_BASE_URL, chat_id);
@@ -63,21 +61,22 @@ pub fn Messages(
     let has_more_messages = RwSignal::new(true);
     let messages_area_ref = NodeRef::<Div>::new();
     let is_loading_more = RwSignal::new(false);
-    let show_pinned = RwSignal::new(false);
     let context_menu_state: RwSignal<Option<ContextMenuState>> = RwSignal::new(None);
     let editing_message_id: RwSignal<Option<Uuid>> = RwSignal::new(None);
     let edit_input = RwSignal::new(String::new());
+    let show_pinned = RwSignal::new(false);
+    let show_members_panel= RwSignal::new(false);
     let (show_chat_settings_window, set_show_chat_settings_window) = signal(false);
 
     //RESOURCES
     let initial_messages = LocalResource::new(move || async move {
-        api::chat_messages::get_chat_messages(chat_id, None, Some(1), Some(PAGE_SIZE))
+        get_chat_messages(chat_id, None, Some(1), Some(PAGE_SIZE))
             .await
             .unwrap_or_default()
     });
 
     let pinned_messages = LocalResource::new(move || async move {
-        api::chat_messages::get_chat_messages(chat_id, Some(true), Some(1), Some(5))
+        get_chat_messages(chat_id, Some(true), Some(1), Some(5))
             .await
             .unwrap_or_default()
     });
@@ -85,7 +84,7 @@ pub fn Messages(
     //ACTIONS
     let send_message = Action::new_local(move |input: &CreateChatMessageRequest| {
         let input = input.clone();
-        async move { api::chat_messages::create_chat_message(input).await }
+        async move { create_chat_message(input).await }
     });
 
     let delete_message_action = Action::new_local(move |message_id: &Uuid| {
@@ -95,7 +94,7 @@ pub fn Messages(
                 chat_id,
                 message_id,
             };
-            let _ = api::chat_messages::delete_chat_message(req).await;
+            let _ = delete_chat_message(req).await;
         }
     });
 
@@ -108,7 +107,7 @@ pub fn Messages(
                 message_id,
                 is_pinned,
             };
-            let _ = api::chat_messages::update_pin_chat_message(req).await;
+            let _ = update_pin_chat_message(req).await;
         }
     });
 
@@ -122,7 +121,7 @@ pub fn Messages(
                     message_id,
                     new_message,
                 };
-                let _ = api::chat_messages::update_edit_chat_message(req).await;
+                let _ = update_edit_chat_message(req).await;
             }
         });
 
@@ -256,7 +255,7 @@ pub fn Messages(
             if let Some(messages_area) = messages_area_ref.get_untracked() {
                 let old_scroll_height = messages_area.scroll_height();
 
-                if let Ok(mut new_messages) = api::chat_messages::get_chat_messages(
+                if let Ok(mut new_messages) = get_chat_messages(
                     chat_id,
                     None,
                     Some(current_page.get_untracked()),
@@ -328,6 +327,9 @@ pub fn Messages(
                 <Show when=move || chat.chat_type.clone() == ChatType::Group>
                     <button class=style::header_button on:click=move |_| set_show_chat_settings_window.set(true)>
                         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M6.45455 19L2 22.5V4C2 3.44772 2.44772 3 3 3H21C21.5523 3 22 3.44772 22 4V18C22 18.5523 21.5523 19 21 19H6.45455ZM8.14499 12.071L7.16987 12.634L8.16987 14.366L9.1459 13.8025C9.64746 14.3133 10.2851 14.69 11 14.874V16H13V14.874C13.7149 14.69 14.3525 14.3133 14.8541 13.8025L15.8301 14.366L16.8301 12.634L15.855 12.071C15.9495 11.7301 16 11.371 16 11C16 10.629 15.9495 10.2699 15.855 9.92901L16.8301 9.36602L15.8301 7.63397L14.8541 8.19748C14.3525 7.68674 13.7149 7.31003 13 7.12602V6H11V7.12602C10.2851 7.31003 9.64746 7.68674 9.1459 8.19748L8.16987 7.63397L7.16987 9.36602L8.14499 9.92901C8.0505 10.2699 8 10.629 8 11C8 11.371 8.0505 11.7301 8.14499 12.071ZM12 13C10.8954 13 10 12.1046 10 11C10 9.89543 10.8954 9 12 9C13.1046 9 14 9.89543 14 11C14 12.1046 13.1046 13 12 13Z"></path></svg>
+                    </button>
+                    <button class=style::header_button on:click=move |_| show_members_panel.set(true)>
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M14 14.252V16.3414C15.2206 16.6013 16.2365 17.1494 17 17.8918V14.252C17 12.4561 15.5439 11 13.75 11C13.5563 11 13.366 11.0207 13.1805 11.0601C13.6457 11.6145 13.955 12.32 14 13.0518V14.252ZM8.5 12C10.433 12 12 10.433 12 8.5C12 6.567 10.433 5 8.5 5C6.567 5 5 6.567 5 8.5C5 10.433 6.567 12 8.5 12ZM8.5 14C5.46243 14 3 16.4624 3 19.5V20.5H14.0312C13.3946 19.7043 13 18.662 13 17.5C13 16.012 13.5036 14.6533 14.3379 13.5895C12.393 13.8536 10.5993 14 8.5 14ZM19 12V14H23V12H19ZM19 16V18H23V16H19ZM17 8V10H23V8H17Z"></path></svg>
                     </button>
                 </Show>
                 <button class=style::header_button on:click=move |_| show_pinned.update(|v| *v = !*v)>
@@ -559,6 +561,11 @@ pub fn Messages(
                     chat=chat_cloned.clone()
                     set_show_chat_settings_window=set_show_chat_settings_window
                     refetch_chats=refetch_chats
+                />
+            </Show>
+            <Show when=move || show_members_panel.get()>
+                <ChatMembersPanel
+                    chat_id=chat_id
                 />
             </Show>
         </div>

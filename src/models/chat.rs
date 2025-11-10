@@ -16,9 +16,10 @@ pub enum SystemMessageType {
     ChatUpdated = 5,
 }
 
-#[derive(Clone, Debug, PartialEq, Deserialize, Serialize)]
-#[serde(rename_all = "camelCase")]
+#[derive(Clone, Debug, PartialEq, Deserialize_repr, Serialize_repr, Default, Copy)]
+#[repr(u8)]
 pub enum ChatMemberRole {
+    #[default]
     Member,
     Administrator,
     Owner,
@@ -54,11 +55,11 @@ pub struct ChatMessage {
 #[serde(rename_all = "camelCase")]
 pub struct ChatMember {
     pub id: Uuid,
-    pub user_id: String,
+    pub user_id: Uuid,
     pub user_name: String,
     pub first_name: String,
     pub last_name: String,
-    pub member_name: String,
+    pub member_name: Option<String>,
     pub is_online: bool,
     pub role: ChatMemberRole,
 }

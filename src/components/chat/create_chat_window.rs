@@ -20,7 +20,7 @@ pub fn CreateChatWindow(
     let (selected_friends, set_selected_friends) = signal(Vec::<Uuid>::new());
 
     // RESOURCES
-    let friends_res = LocalResource::new(move || get_friends(None, None));
+    let friends_res = LocalResource::new(move || get_friends(None, Some(100)));
 
     // ACTIONS
     let create_chat_action = Action::new_local(move |req: &CreateGroupChatRequest| {
