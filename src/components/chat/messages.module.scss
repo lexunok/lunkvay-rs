@@ -32,16 +32,16 @@
         padding: 5px;
         border-radius: 50%;
         cursor: pointer;
-        width: 30px;
-        height: 30px;
+        width: 40px;
+        height: 40px;
         display: flex;
         align-items: center;
         justify-content: center;
         transition: background-color 0.2s ease, color 0.2s ease;
 
         svg {
-            width: 28px;
-            height: 28px;
+            width: 36px;
+            height: 36px;
         }
 
         &:hover {
@@ -53,25 +53,27 @@
 
 .pinned_messages_bar {
     position: absolute;
-    top: 60px;
+    top: 55px;
     right: 0%;
     width: 40%;
     background-color: #2a2a2a;
     border-bottom: 1px solid #444;
-    transform-origin: top;
-    transform: scaleY(0);
-    transition: transform 0.2s ease-out, box-shadow 0.2s ease-out;
-    overflow: hidden;
     padding: 8px 10px 12px;
     z-index: 5;
     display: flex;
     flex-direction: column;
     gap: 8px;
-    box-shadow: 0 0 0 rgba(0, 0, 0, 0);
+
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(-100%);
+    transition: transform 0.3s ease-out, opacity 0.3s ease-out, visibility 0.3s ease-out;
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.25);
 
     &.show {
-        transform: scaleY(1);
-        box-shadow: 0 4px 14px rgba(0, 0, 0, 0.25);
+        opacity: 1;
+        visibility: visible;
+        transform: translateY(0);
     }
 }
 
@@ -124,10 +126,13 @@
 .message_content {
     padding: 10px 15px;
     border-radius: 18px;
-    max-width: 75%;
     font-size: 16px;
-    word-wrap: break-word;
     box-shadow: 0 1px 2px rgba(0, 0, 0, 0.25);
+
+    white-space: pre-wrap;
+    word-wrap: break-word;
+    overflow-wrap: anywhere;
+    text-align: justify;
 
     p {
         margin: 0;
@@ -159,12 +164,31 @@
 .other_message {
     align-self: flex-start;
     align-items: flex-start;
+    flex-direction: row;
 
     .message_content {
         background-color: #444444;
         color: #f0f0f0;
         border-radius: 4px 18px 18px 18px;
     }
+}
+
+.message_avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    margin-right: 10px;
+    align-self: flex-start;
+}
+
+.message_body {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+}
+
+.my_message .message_body {
+    align-items: flex-end;
 }
 
 .time_and_status {

@@ -22,6 +22,7 @@ pub fn ProfilePage() -> impl IntoView {
     //SIGNALS
     let params = use_params::<ProfileParams>();
     let (show_editing_window, set_show_editing_window) = signal(false);
+    let (avatar_count, set_avatar_count) = signal(0);
 
     //RESOURCES
     let profile_res = LocalResource::new(move || {
@@ -48,7 +49,7 @@ pub fn ProfilePage() -> impl IntoView {
                                 <div class=style::user_info_card>
                                     <div class=style::avatar>
                                         <img
-                                            src=format!("{}/avatar/{}", API_BASE_URL, profile.user.id)
+                                            src=format!("{}/avatar/{}?v={}", API_BASE_URL, profile.user.id, avatar_count.get())
                                             onerror="this.onerror=null;this.src='/images/userdefault.webp';"
                                         />
                                     </div>
@@ -96,6 +97,7 @@ pub fn ProfilePage() -> impl IntoView {
                                     about=profile.about.clone().unwrap_or_default()
                                     avatar_url = format!("{}/avatar/{}", API_BASE_URL, profile.user.id)
                                     set_show_editing_window = set_show_editing_window
+                                    set_avatar_count = set_avatar_count
                                     refetch_profile = Callback::new(move |()| profile_res.refetch())
                                 />
                             </Show>

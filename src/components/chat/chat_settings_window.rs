@@ -3,7 +3,7 @@ use crate::api::{
     image::{delete_chat_image, upload_chat_image},
 };
 use crate::models::chat::Chat;
-use crate::utils::API_BASE_URL;
+use crate::utils::{API_BASE_URL, get_current_user_id};
 use leptos::prelude::*;
 use stylance::import_style;
 use web_sys::SubmitEvent;
@@ -15,6 +15,7 @@ import_style!(style, "chat_settings_window.module.scss");
 pub fn ChatSettingsWindow(
     chat: Chat,
     set_show_chat_settings_window: WriteSignal<bool>,
+    avatar_count: RwSignal<i32>,
     refetch_chats: Callback<()>,
 ) -> impl IntoView {
     // SIGNALS
@@ -52,6 +53,7 @@ pub fn ChatSettingsWindow(
             || upload_chat_image_action.version().get() > 0
             || delete_chat_image_action.version().get() > 0
         {
+            *avatar_count.write() += 1;
             refetch_chats.run(());
             set_show_chat_settings_window.set(false);
         }
@@ -89,7 +91,7 @@ pub fn ChatSettingsWindow(
                 <form on:submit=on_submit>
                     <div class=style::image_upload_section>
                         <div class=style::image_preview>
-                            <img src=move || preview_image_url.get().unwrap_or_else(|| format!("{}/chat-image/{}", API_BASE_URL, chat_id)) onerror="this.onerror=null;this.src='/images/chatdefault.webp';"/>
+                            <img src=move || preview_image_url.get().unwrap_or_else(|| format!("{}/chat-image/{}/{}?v={}", API_BASE_URL, get_current_user_id().unwrap_or_default(),chat_id, avatar_count.get())) onerror="this.onerror=null;this.src='/images/chatdefault.webp';"/>
                         </div>
                         <input type="file" accept="image/*" on:change=on_file_change class=style::file_input/>
                         <button type="button" on:click=move |_| {delete_chat_image_action.dispatch(());} class=style::delete_image_button>"Удалить изображение чата"</button>

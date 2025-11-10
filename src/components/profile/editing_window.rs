@@ -15,6 +15,7 @@ pub fn EditingWindow(
     about: String,
     avatar_url: String,
     set_show_editing_window: WriteSignal<bool>,
+    set_avatar_count: WriteSignal<i32>,
     refetch_profile: Callback<()>,
 ) -> impl IntoView {
     //SIGNALS
@@ -72,6 +73,7 @@ pub fn EditingWindow(
             || upload_avatar_action.version().get() > 0
             || delete_avatar_action.version().get() > 0
         {
+            *set_avatar_count.write() += 1;
             refetch_profile.run(());
             set_show_editing_window.set(false);
         }

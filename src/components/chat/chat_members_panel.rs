@@ -6,34 +6,21 @@ use crate::{
         },
         friends::get_friends,
     },
-    models::{
-        chat::{ChatMember, ChatMemberRole},
-        friends::Friendship,
-    },
+    models::chat::{ChatMember, ChatMemberRole},
     utils::{API_BASE_URL, get_current_user_id},
 };
 use leptos::prelude::*;
-use leptos_use::{UseTimeoutFnReturn, use_timeout_fn};
 use stylance::import_style;
 use uuid::Uuid;
 
 import_style!(style, "chat_members_panel.module.scss");
 
 #[component]
-pub fn ChatMembersPanel(chat_id: Uuid) -> impl IntoView {
-    let user_to_invite = RwSignal::new(None::<Uuid>);
+pub fn ChatMembersPanel(chat_id: Uuid, show: ReadSignal<bool>) -> impl IntoView {
     let show_invite_modal = RwSignal::new(false);
-    let show_edit_role_modal = RwSignal::new(None::<ChatMember>);
+    let show_edit_member_modal = RwSignal::new(None::<ChatMember>);
     let selected_role = RwSignal::new(ChatMemberRole::Member);
-    let show_anim = RwSignal::new(false);
-
-    let UseTimeoutFnReturn { start, .. } = use_timeout_fn(
-        move |_| {
-            show_anim.set(true);
-        },
-        10.0,
-    );
-    start(());
+    let new_member_name = RwSignal::new(String::new());
 
     let current_user_id = get_current_user_id().unwrap_or_default();
 
@@ -100,30 +87,26 @@ pub fn ChatMembersPanel(chat_id: Uuid) -> impl IntoView {
             .map(|m| m.role.clone())
     });
 
-    let can_manage = Memo::new(move |_| {
-        matches!(
-            current_user_role.get(),
-            Some(ChatMemberRole::Owner) | Some(ChatMemberRole::Administrator)
-        )
-    });
-
     view! {
-        <div class=move || format!("{} {}", style::members_panel, if show_anim.get() { style::show } else { "" })>
+        <div class=move || format!("{} {}", style::members_panel, if show.get() { style::show } else { "" })>
             <div class=style::panel_header>
                 <div class=style::header_actions_left>
-                    <button class=style::header_button on:click=move |_| {
-                        delete_member_action.dispatch(DeleteChatMemberRequest { chat_id, member_id: current_user_id });
-                    }>
-                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M12 22C6.47715 22 2 17.5228 2 12C2 6.47715 6.47715 2 12 2C17.5228 2 22 6.47715 22 12C22 17.5228 17.5228 22 12 22ZM12 20V15M8.00002 15L12 11L16 15M12 4V9"></path></svg>
-                    </button>
-                </div>
-                <h3>"Участники"</h3>
-                <div class=style::header_actions_right>
                     <button
                         class=style::header_button
                         on:click=move |_| show_invite_modal.set(true)
                     >
-                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M14 2V4H12V2H14ZM12 20H14V22H12V20ZM20 12V14H22V12H20ZM2 12V14H4V12H2ZM18.1924 16.7782L19.6066 18.1924L16.7782 21.0208L15.364 19.6066L18.1924 16.7782ZM12 4C11.4477 4 11 4.44772 11 5V11H5C4.44772 11 4 11.4477 4 12C4 12.5523 4.44772 13 5 13H11V19C11 19.5523 11.4477 20 12 20C12.5523 20 13 19.5523 13 19V13H19C19.5523 13 20 12.5523 20 12C20 11.4477 19.5523 11 19 11H13V5C13 4.44772 12.5523 4 12 4ZM19.6066 4.3934L21.0208 5.80761L18.1924 8.63604L16.7782 7.22183L19.6066 4.3934ZM8.63604 18.1924L7.22183 19.6066L4.3934 16.7782L5.80761 15.364L8.63604 18.1924ZM7.22183 5.80761L5.80761 4.3934L8.63604 1.565L10.0503 2.97921L7.22183 5.80761Z"></path></svg>
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M14 14.252V22H4C4 17.5817 7.58172 14 12 14C12.6906 14 13.3608 14.0875 14 14.252ZM12 13C8.685 13 6 10.315 6 7C6 3.685 8.685 1 12 1C15.315 1 18 3.685 18 7C18 10.315 15.315 13 12 13ZM18 17V14H20V17H23V19H20V22H18V19H15V17H18Z"></path></svg>
+                    </button>
+                </div>
+                <div class=style::title_container>
+                    <h3>"Участники"</h3>
+                    <span class=style::member_count>{move || chat_members.get().unwrap_or_default().len()}</span>
+                </div>
+                <div class=style::header_actions_right>
+                    <button class=style::header_button on:click=move |_| {
+                        delete_member_action.dispatch(DeleteChatMemberRequest { chat_id, member_id: current_user_id });
+                    }>
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M6.45455 19L2 22.5V4C2 3.44772 2.44772 3 3 3H21C21.5523 3 22 3.44772 22 4V18C22 18.5523 21.5523 19 21 19H6.45455ZM13.4142 11L15.8891 8.52513L14.4749 7.11091L12 9.58579L9.52513 7.11091L8.11091 8.52513L10.5858 11L8.11091 13.4749L9.52513 14.8891L12 12.4142L14.4749 14.8891L15.8891 13.4749L13.4142 11Z"></path></svg>
                     </button>
                 </div>
             </div>
@@ -133,108 +116,164 @@ pub fn ChatMembersPanel(chat_id: Uuid) -> impl IntoView {
                         each=move || chat_members.get().unwrap_or_default()
                         key=|member| member.id
                         children=move |member| {
-                            let member_user_id = member.user_id;
-                            let member = RwSignal::new(member);
+                            let member_clone = RwSignal::new(member.clone());
+                            let current_role = current_user_role.get_untracked().unwrap_or_default();
+
+                            let can_edit_role = Memo::new(move |_|
+                                current_role == ChatMemberRole::Owner && member.user_id != current_user_id
+                            );
+
+                            let can_edit_name = Memo::new(move |_|
+                                member.user_id == current_user_id ||
+                                current_role == ChatMemberRole::Owner ||
+                                (current_role == ChatMemberRole::Administrator && member.role != ChatMemberRole::Owner)
+                            );
+
+                            let can_delete = Memo::new(move |_|
+                                (current_role == ChatMemberRole::Owner && member.user_id != current_user_id) ||
+                                (current_role == ChatMemberRole::Administrator && member.role != ChatMemberRole::Owner && member.role != ChatMemberRole::Administrator)
+                            );
 
                             view! {
                                 <li class=style::member_item>
-                                    <img class=style::avatar src=format!("{}/avatar/{}", API_BASE_URL, member.get_untracked().user_id) onerror="this.onerror=null;this.src='/images/userdefault.webp';"/>
+                                    <img class=style::avatar src=format!("{}/avatar/{}", API_BASE_URL, member.user_id) onerror="this.onerror=null;this.src='/images/userdefault.webp';"/>
                                     <div class=style::member_info>
-                                        <p class=style::member_name>{format!("{} {}", member.get_untracked().first_name, member.get_untracked().last_name)}</p>
-                                        <p class=style::member_username>{format!("@{}", member.get_untracked().member_name.unwrap_or(member.get_untracked().user_name))}</p>
-                                        <p class=style::member_role>{format!("{:?}", member.get_untracked().role)}</p>
+                                        <p class=style::member_name>{member.member_name.clone().unwrap_or_else(|| format!("{} {}", member.first_name, member.last_name))}</p>
+                                        <p class=style::member_username>{format!("@{}", member.user_name)}</p>
+                                        <p class=style::member_role>{format!("{:?}", member.role)}</p>
                                     </div>
-                                    <Show when=move || can_manage.get() && member_user_id != current_user_id>
-                                         <div class=style::member_actions>
+                                    <div class=style::member_actions>
+                                        <Show when=move || can_edit_role.get() || can_edit_name.get()>
                                             <button class=style::action_button on:click=move |_| {
-                                                selected_role.set(member.get_untracked().role);
-                                                show_edit_role_modal.set(Some(member.get_untracked()));
+                                                new_member_name.set(member_clone.get_untracked().member_name.unwrap_or_default());
+                                                selected_role.set(member_clone.get_untracked().role);
+                                                show_edit_member_modal.set(Some(member_clone.get_untracked()));
                                             }>
-                                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M12.9,2.6l8.5,8.5l-2.8,2.8l-8.5-8.5L12.9,2.6z M4,14.1V18h3.9l10-10L14,4.1L4,14.1z M4,20v2h16v-2H4z"></path></svg>
+                                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M7.24264 17.9967H3V13.754L14.435 2.319C14.8256 1.92848 15.4587 1.92848 15.8492 2.319L18.6777 5.14743C19.0682 5.53795 19.0682 6.17112 18.6777 6.56164L7.24264 17.9967ZM3 19.9967H21V21.9967H3V19.9967Z"></path></svg>
                                             </button>
+                                        </Show>
+                                        <Show when=move || can_delete.get()>
                                             <button class=style::action_button on:click=move |_| {
-                                                delete_member_action.dispatch(DeleteChatMemberRequest { chat_id, member_id: member_user_id });
+                                                delete_member_action.dispatch(DeleteChatMemberRequest { chat_id, member_id: member.user_id });
                                             }>
-                                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M7 4V2H17V4H22V6H20V21C20 21.5523 19.5523 22 19 22H5C4.44772 22 4 21.5523 4 21V6H2V4H7ZM6 6V20H18V6H6ZM9 9H11V17H9V9ZM13 9H15V17H13V9Z"></path></svg>
+                                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M17 6H22V8H20V21C20 21.5523 19.5523 22 19 22H5C4.44772 22 4 21.5523 4 21V8H2V6H7V3C7 2.44772 7.44772 2 8 2H16C16.5523 2 17 2.44772 17 3V6ZM9 11V17H11V11H9ZM13 11V17H15V11H13ZM9 4V6H15V4H9Z"></path></svg>
                                             </button>
-                                         </div>
-                                    </Show>
+                                        </Show>
+                                    </div>
                                 </li>
                             }
                         }
                     />
                 </Suspense>
             </ul>
-
             <Show when=move || show_invite_modal.get()>
-                <div class=style::invite_modal>
-                    <div class=style::modal_content>
-                        <h3>"Пригласить пользователя"</h3>
-                        <div class=style::user_list>
-                            <For
-                                each=move || friends_res.get().unwrap_or_default()
-                                key=|friend| friend.user_id
-                                children=move |friend| {
-                                    let user_id = friend.user_id;
-                                    view! {
-                                        <div
-                                            class=move || format!("{} {}", style::user_item, if user_to_invite.get() == Some(user_id) { style::selected } else { "" })
-                                            on:click=move |_| user_to_invite.set(Some(user_id))
-                                        >
-                                            <img class=style::avatar src=format!("{}/avatar/{}", API_BASE_URL, user_id) onerror="this.onerror=null;this.src='/images/userdefault.webp';"/>
-                                            <span>{format!("{} {}", friend.first_name, friend.last_name)}</span>
-                                        </div>
-                                    }
-                                }
-                            />
+                <div class=style::invite_panel>
+                    <div class=style::panel_header>
+                        <div class=style::header_actions_left>
+                            <button class=style::header_button on:click=move |_| show_invite_modal.set(false)>
+                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M8 7V11L2 6L8 1V5H13C17.4183 5 21 8.58172 21 13C21 17.4183 17.4183 21 13 21H4V19H13C16.3137 19 19 16.3137 19 13C19 9.68629 16.3137 7 13 7H8Z"></path></svg>
+                            </button>
                         </div>
-                        <div class=style::modal_actions>
-                            <button class=style::cancel_button on:click=move |_| show_invite_modal.set(false)>"Отмена"</button>
-                            <button class=style::save_button on:click=move |_| {
-                                if let Some(member_id) = user_to_invite.get() {
-                                    create_member_action.dispatch(CreateChatMemberRequest {
-                                        chat_id,
-                                        member_id,
-                                        inviter_id: current_user_id,
-                                    });
-                                    show_invite_modal.set(false);
-                                    user_to_invite.set(None);
-                                }
-                            }>"Пригласить"</button>
+                        <div class=style::title_container>
+                            <h3>"Пригласить в чат"</h3>
+                        </div>
+                        <div class=style::header_actions_right>
                         </div>
                     </div>
+                    <ul class=style::members_list>
+                        <For
+                            each=move || friends_res.get().unwrap_or_default()
+                            key=|friend| friend.user_id
+                            children=move |friend| {
+                                let user_id = friend.user_id;
+                                view! {
+                                    <li class=style::member_item>
+                                        <img class=style::avatar src=format!("{}/avatar/{}", API_BASE_URL, user_id) onerror="this.onerror=null;this.src='/images/userdefault.webp';"/>
+                                        <div class=style::member_info>
+                                            <p class=style::member_name>{format!("{} {}", friend.first_name, friend.last_name)}</p>
+                                            <p class=style::member_username>{format!("@{}", friend.user_name)}</p>
+                                        </div>
+                                        <div class=style::member_actions>
+                                            <button class=style::action_button on:click=move |_| {
+                                                create_member_action.dispatch(CreateChatMemberRequest {
+                                                    chat_id,
+                                                    member_id: user_id,
+                                                    inviter_id: current_user_id,
+                                                });
+                                                chat_members.refetch();
+                                                show_invite_modal.set(false);
+                                            }>
+                                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M11 11V5H13V11H19V13H13V19H11V13H5V11H11Z"></path></svg>
+                                            </button>
+                                        </div>
+                                    </li>
+                                }
+                            }
+                        />
+                    </ul>
                 </div>
             </Show>
-
-            <Show when=move || show_edit_role_modal.get().is_some()>
-                {move || show_edit_role_modal.get().map(|member| {
+            <Show when=move || show_edit_member_modal.get().is_some()>
+                {move || show_edit_member_modal.get().map(|member| {
                     let member_id = member.user_id;
+                    let current_role = current_user_role.get_untracked().unwrap_or_default();
+
+                    let can_edit_role = current_role == ChatMemberRole::Owner && member.user_id != current_user_id;
+                    let can_edit_name = member.user_id == current_user_id ||
+                                        current_role == ChatMemberRole::Owner ||
+                                        (current_role == ChatMemberRole::Administrator && member.role != ChatMemberRole::Owner);
+
                     view! {
-                        <div class=style::edit_role_modal>
-                            <div class=style::modal_content>
-                                <h3>{format!("Изменить роль для {}", member.user_name)}</h3>
-                                <select class=style::role_select on:change=move |ev| {
-                                    let value = event_target_value(&ev);
-                                    selected_role.set(match value.as_str() {
-                                        "Administrator" => ChatMemberRole::Administrator,
-                                        _ => ChatMemberRole::Member,
-                                    });
-                                }>
-                                    <option value="Member" selected=member.role == ChatMemberRole::Member>"Участник"</option>
-                                    <option value="Administrator" selected=member.role == ChatMemberRole::Administrator>"Администратор"</option>
-                                </select>
-                                <div class=style::modal_actions>
-                                    <button class=style::cancel_button on:click=move |_| show_edit_role_modal.set(None)>"Отмена"</button>
-                                    <button class=style::save_button on:click=move |_| {
+                        <div class=style::edit_panel>
+                            <div class=style::panel_header>
+                                <div class=style::header_actions_left>
+                                    <button class=style::header_button on:click=move |_| show_edit_member_modal.set(None)>
+                                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M8 7V11L2 6L8 1V5H13C17.4183 5 21 8.58172 21 13C21 17.4183 17.4183 21 13 21H4V19H13C16.3137 19 19 16.3137 19 13C19 9.68629 16.3137 7 13 7H8Z"></path></svg>
+                                    </button>
+                                </div>
+                                <div class=style::title_container>
+                                    <h3>{format!("Редактировать {}", member.user_name)}</h3>
+                                </div>
+                                <div class=style::header_actions_right>
+                                    <button class=style::header_button on:click=move |_| {
                                         update_member_action.dispatch(UpdateChatMemberRequest {
                                             chat_id,
                                             member_id,
-                                            new_member_name: None,
-                                            new_role: Some(selected_role.get()),
+                                            new_member_name: if can_edit_name { Some(new_member_name.get()) } else { None },
+                                            new_role: if can_edit_role { Some(selected_role.get()) } else { None },
                                         });
-                                        show_edit_role_modal.set(None);
-                                    }>"Сохранить"</button>
+                                        chat_members.refetch();
+                                        show_edit_member_modal.set(None);
+                                    }>
+                                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M18 21V13H6V21H4C3.44772 21 3 20.5523 3 20V4C3 3.44772 3.44772 3 4 3H17L21 7V20C21 20.5523 20.5523 21 20 21H18ZM16 21H8V15H16V21Z"></path></svg>
+                                    </button>
                                 </div>
+                            </div>
+
+                            <div class=style::form_container>
+                                <Show when=move || can_edit_name>
+                                    <label>"Имя в чате"</label>
+                                    <input
+                                        type="text"
+                                        class=style::text_input
+                                        prop:placeholder="Новое имя в чате"
+                                        bind:value=new_member_name
+                                    />
+                                </Show>
+
+                                <Show when=move || can_edit_role>
+                                    <label>"Роль"</label>
+                                    <select class=style::role_select on:change=move |ev| {
+                                        let value = event_target_value(&ev);
+                                        selected_role.set(match value.as_str() {
+                                            "Administrator" => ChatMemberRole::Administrator,
+                                            _ => ChatMemberRole::Member,
+                                        });
+                                    }>
+                                        <option value="Member" selected=member.role == ChatMemberRole::Member>"Участник"</option>
+                                        <option value="Administrator" selected=member.role == ChatMemberRole::Administrator>"Администратор"</option>
+                                    </select>
+                                </Show>
                             </div>
                         </div>
                     }

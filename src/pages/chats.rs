@@ -16,6 +16,7 @@ pub fn ChatsPage() -> impl IntoView {
     //SIGNALS
     let (selected_chat, set_chat) = signal(None::<Chat>);
     let (show_create_chat_window, set_show_create_chat_window) = signal(false);
+    let avatar_count = RwSignal::new(0);
     //VIEW
     view! {
         <div class=style::container>
@@ -41,10 +42,11 @@ pub fn ChatsPage() -> impl IntoView {
                             key=|chat| chat.id
                             children=move |chat| {
                                 let chat_image = format!(
-                                    "{}/chat-image/{}/{}",
+                                    "{}/chat-image/{}/{}?v={}",
                                     API_BASE_URL,
                                     get_current_user_id().unwrap_or_default(),
-                                    chat.id
+                                    chat.id,
+                                    avatar_count.get()
                                 );
                                 view! {
                                     <div
@@ -97,7 +99,7 @@ pub fn ChatsPage() -> impl IntoView {
             <div class=style::right_panel>
                 {move || selected_chat.get().map(|chat| {
                     view! {
-                        <Messages chat = chat set_chat=set_chat refetch_chats=Callback::new(move |()| chats.refetch())/>
+                        <Messages chat = chat set_chat=set_chat avatar_count=avatar_count refetch_chats=Callback::new(move |()| chats.refetch())/>
                     }.into_any()
                 }).unwrap_or_else(|| view! {<div class=style::no_chat_selected><h1>"Выберите чат чтобы начать общение"</h1></div>}.into_any())
                 }

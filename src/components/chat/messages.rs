@@ -1,11 +1,12 @@
 use crate::{
-    api::chat_messages::*,
+    api::{chat_members::get_chat_members, chat_messages::*},
     components::{
         chat::{chat_members_panel::ChatMembersPanel, chat_settings_window::ChatSettingsWindow},
         spinner::Spinner,
     },
     models::chat::{
-        Chat, ChatMessage, ChatType, PinnedMessageData, SystemMessageType, WsMessage, WsMessageType,
+        Chat, ChatMemberRole, ChatMessage, ChatType, PinnedMessageData, SystemMessageType,
+        WsMessage, WsMessageType,
     },
     utils::{API_BASE_URL, DOMAIN, get_current_user_id},
 };
@@ -14,8 +15,8 @@ use codee::string::JsonSerdeCodec;
 use leptos::html::Div;
 use leptos::{ev, prelude::*};
 use leptos_use::{
-    UseInfiniteScrollOptions, UseWebSocketReturn, use_event_listener,
-    use_infinite_scroll_with_options, use_websocket,
+    UseInfiniteScrollOptions, UseTimeoutFnReturn, UseWebSocketReturn, use_event_listener,
+    use_infinite_scroll_with_options, use_timeout_fn, use_websocket,
 };
 use stylance::import_style;
 use uuid::Uuid;
@@ -43,6 +44,7 @@ struct ContextMenuState {
 pub fn Messages(
     chat: Chat,
     set_chat: WriteSignal<Option<Chat>>,
+    avatar_count: RwSignal<i32>,
     refetch_chats: Callback<()>,
 ) -> impl IntoView {
     let chat_id = chat.id;
@@ -53,12 +55,6 @@ pub fn Messages(
     );
 
     //SIGNALS
-    let chat_image = format!(
-        "{}/chat-image/{}/{}",
-        API_BASE_URL,
-        get_current_user_id().unwrap_or_default(),
-        chat_id
-    );
     let messsage_input = RwSignal::new(String::new());
     let messages = RwSignal::new(Vec::<ChatMessage>::new());
     let current_page = RwSignal::new(1);
@@ -69,8 +65,46 @@ pub fn Messages(
     let editing_message_id: RwSignal<Option<Uuid>> = RwSignal::new(None);
     let edit_input = RwSignal::new(String::new());
     let show_pinned = RwSignal::new(false);
-    let show_members_panel = RwSignal::new(false);
+    let (is_panel_open, set_is_panel_open) = signal(false);
+    let (render_panel, set_render_panel) = signal(false);
+    let (animate_panel, set_animate_panel) = signal(false);
     let (show_chat_settings_window, set_show_chat_settings_window) = signal(false);
+    let chat_image = format!(
+        "{}/chat-image/{}/{}?v={}",
+        API_BASE_URL,
+        get_current_user_id().unwrap_or_default(),
+        chat_id,
+        avatar_count.get()
+    );
+
+    let UseTimeoutFnReturn {
+        start: start_unmount_timer,
+        ..
+    } = use_timeout_fn(
+        move |_| {
+            set_render_panel.set(false);
+        },
+        300.0,
+    );
+    let UseTimeoutFnReturn {
+        start: start_anim_timer,
+        ..
+    } = use_timeout_fn(
+        move |_| {
+            set_animate_panel.set(true);
+        },
+        10.0,
+    );
+
+    Effect::new(move |_| {
+        if is_panel_open.get() {
+            set_render_panel.set(true);
+            start_anim_timer(());
+        } else {
+            set_animate_panel.set(false);
+            start_unmount_timer(());
+        }
+    });
 
     //RESOURCES
     let initial_messages = LocalResource::new(move || async move {
@@ -84,6 +118,21 @@ pub fn Messages(
             .await
             .unwrap_or_default()
     });
+
+    let chat_members = LocalResource::new(move || async move { get_chat_members(chat_id).await });
+
+    let current_user_role = Memo::new(move |_| {
+        if let Some(Ok(members)) = chat_members.get() {
+            members
+                .iter()
+                .find(|m| m.user_id == get_current_user_id().unwrap_or_default())
+                .map(|m| m.role)
+        } else {
+            None
+        }
+    });
+
+    let is_member = Memo::new(move |_| current_user_role.get().is_some());
 
     //ACTIONS
     let send_message = Action::new_local(move |input: &CreateChatMessageRequest| {
@@ -328,12 +377,14 @@ pub fn Messages(
             <div class=style::chat_header>
                 <img class=style::avatar src=chat_image onerror="this.onerror=null;this.src='/images/chatdefault.webp';"/>
                 <span class=style::chat_name>{chat_name}</span>
-                <Show when=move || chat.chat_type.clone() == ChatType::Group>
-                    <button class=style::header_button on:click=move |_| set_show_chat_settings_window.set(true)>
-                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M6.45455 19L2 22.5V4C2 3.44772 2.44772 3 3 3H21C21.5523 3 22 3.44772 22 4V18C22 18.5523 21.5523 19 21 19H6.45455ZM8.14499 12.071L7.16987 12.634L8.16987 14.366L9.1459 13.8025C9.64746 14.3133 10.2851 14.69 11 14.874V16H13V14.874C13.7149 14.69 14.3525 14.3133 14.8541 13.8025L15.8301 14.366L16.8301 12.634L15.855 12.071C15.9495 11.7301 16 11.371 16 11C16 10.629 15.9495 10.2699 15.855 9.92901L16.8301 9.36602L15.8301 7.63397L14.8541 8.19748C14.3525 7.68674 13.7149 7.31003 13 7.12602V6H11V7.12602C10.2851 7.31003 9.64746 7.68674 9.1459 8.19748L8.16987 7.63397L7.16987 9.36602L8.14499 9.92901C8.0505 10.2699 8 10.629 8 11C8 11.371 8.0505 11.7301 8.14499 12.071ZM12 13C10.8954 13 10 12.1046 10 11C10 9.89543 10.8954 9 12 9C13.1046 9 14 9.89543 14 11C14 12.1046 13.1046 13 12 13Z"></path></svg>
-                    </button>
-                    <button class=style::header_button on:click=move |_| show_members_panel.set(!show_members_panel.get())>
-                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M14 14.252V16.3414C15.2206 16.6013 16.2365 17.1494 17 17.8918V14.252C17 12.4561 15.5439 11 13.75 11C13.5563 11 13.366 11.0207 13.1805 11.0601C13.6457 11.6145 13.955 12.32 14 13.0518V14.252ZM8.5 12C10.433 12 12 10.433 12 8.5C12 6.567 10.433 5 8.5 5C6.567 5 5 6.567 5 8.5C5 10.433 6.567 12 8.5 12ZM8.5 14C5.46243 14 3 16.4624 3 19.5V20.5H14.0312C13.3946 19.7043 13 18.662 13 17.5C13 16.012 13.5036 14.6533 14.3379 13.5895C12.393 13.8536 10.5993 14 8.5 14ZM19 12V14H23V12H19ZM19 16V18H23V16H19ZM17 8V10H23V8H17Z"></path></svg>
+                <Show when=move || chat.chat_type.clone() == ChatType::Group && is_member.get()>
+                    <Show when=move || matches!(current_user_role.get(), Some(ChatMemberRole::Owner | ChatMemberRole::Administrator))>
+                        <button class=style::header_button on:click=move |_| set_show_chat_settings_window.set(true)>
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M6.45455 19L2 22.5V4C2 3.44772 2.44772 3 3 3H21C21.5523 3 22 3.44772 22 4V18C22 18.5523 21.5523 19 21 19H6.45455ZM8.14499 12.071L7.16987 12.634L8.16987 14.366L9.1459 13.8025C9.64746 14.3133 10.2851 14.69 11 14.874V16H13V14.874C13.7149 14.69 14.3525 14.3133 14.8541 13.8025L15.8301 14.366L16.8301 12.634L15.855 12.071C15.9495 11.7301 16 11.371 16 11C16 10.629 15.9495 10.2699 15.855 9.92901L16.8301 9.36602L15.8301 7.63397L14.8541 8.19748C14.3525 7.68674 13.7149 7.31003 13 7.12602V6H11V7.12602C10.2851 7.31003 9.64746 7.68674 9.1459 8.19748L8.16987 7.63397L7.16987 9.36602L8.14499 9.92901C8.0505 10.2699 8 10.629 8 11C8 11.371 8.0505 11.7301 8.14499 12.071ZM12 13C10.8954 13 10 12.1046 10 11C10 9.89543 10.8954 9 12 9C13.1046 9 14 9.89543 14 11C14 12.1046 13.1046 13 12 13Z"></path></svg>
+                        </button>
+                    </Show>
+                    <button class=style::header_button on:click=move |_| set_is_panel_open.set(!is_panel_open.get())>
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M12 10C14.2091 10 16 8.20914 16 6 16 3.79086 14.2091 2 12 2 9.79086 2 8 3.79086 8 6 8 8.20914 9.79086 10 12 10ZM5.5 13C6.88071 13 8 11.8807 8 10.5 8 9.11929 6.88071 8 5.5 8 4.11929 8 3 9.11929 3 10.5 3 11.8807 4.11929 13 5.5 13ZM21 10.5C21 11.8807 19.8807 13 18.5 13 17.1193 13 16 11.8807 16 10.5 16 9.11929 17.1193 8 18.5 8 19.8807 8 21 9.11929 21 10.5ZM12 11C14.7614 11 17 13.2386 17 16V22H7V16C7 13.2386 9.23858 11 12 11ZM5 15.9999C5 15.307 5.10067 14.6376 5.28818 14.0056L5.11864 14.0204C3.36503 14.2104 2 15.6958 2 17.4999V21.9999H5V15.9999ZM22 21.9999V17.4999C22 15.6378 20.5459 14.1153 18.7118 14.0056 18.8993 14.6376 19 15.307 19 15.9999V21.9999H22Z"></path></svg>
                     </button>
                 </Show>
                 <button class=style::header_button on:click=move |_| show_pinned.update(|v| *v = !*v)>
@@ -399,81 +450,83 @@ pub fn Messages(
 
                                     match msg.system_message_type {
                                         SystemMessageType::None => view! {
-                                            <div
-                                                class=message_class
-                                                on:contextmenu=move |ev| {
-                                                    ev.prevent_default();
-                                                    if let Some(area) = messages_area_ref.get() {
-                                                        let area_rect = area.get_bounding_client_rect();
-                                                        let x_offset = -150;
-                                                        let y_offset = -60;
-                                                        let x = ev.client_x() - area_rect.left() as i32 + area.scroll_left() as i32 + x_offset;
-                                                        let y = ev.client_y() - area_rect.top() as i32 + area.scroll_top() as i32 + y_offset;
-
-                                                        context_menu_state.set(Some(ContextMenuState {
-                                                            message_id: msg.id,
-                                                            is_my_message: msg.is_my_message,
-                                                            is_pinned: msg.is_pinned,
-                                                            x,
-                                                            y,
-                                                        }));
-                                                    }
-                                                }
-                                            >
-                                                <Show when=move || !msg.is_my_message && chat_type_cloned_2.clone() != ChatType::Personal>
-                                                    <div class=style::sender_name>{msg.sender_user_name.clone()}</div>
+                                            <div class=message_class>
+                                                <Show when=move || !msg.is_my_message>
+                                                    <img class=style::message_avatar src=format!("{}/avatar/{}", API_BASE_URL, msg.sender_id.unwrap_or_default()) onerror="this.onerror=null;this.src='/images/userdefault.webp';"/>
                                                 </Show>
+                                                <div class=style::message_body>
+                                                    <Show when=move || !msg.is_my_message && chat_type_cloned_2.clone() != ChatType::Personal>
+                                                        <div class=style::sender_name>{msg.sender_user_name.clone()}</div>
+                                                    </Show>
 
-                                                <Show
-                                                    when=move || editing_message_id.get() != Some(msg.id)
-                                                    fallback=move || {
-                                                        let msg_id = msg.id;
-                                                        view! {
-                                                            <div class=style::edit_container>
-                                                                <input
-                                                                    type="text"
-                                                                    class=style::edit_input
-                                                                    bind:value=edit_input
-                                                                    on:keyup=move |ev| {
-                                                                        if ev.key() == "Enter" {
-                                                                            edit_message_action.dispatch((msg_id, edit_input.get()));
-                                                                        } else if ev.key() == "Escape" {
-                                                                            editing_message_id.set(None);
+                                                    <Show
+                                                        when=move || editing_message_id.get() != Some(msg.id)
+                                                        fallback=move || {
+                                                            let msg_id = msg.id;
+                                                            view! {
+                                                                <div class=style::edit_container>
+                                                                    <input
+                                                                        type="text"
+                                                                        class=style::edit_input
+                                                                        bind:value=edit_input
+                                                                        on:keyup=move |ev| {
+                                                                            if ev.key() == "Enter" {
+                                                                                edit_message_action.dispatch((msg_id, edit_input.get()));
+                                                                            } else if ev.key() == "Escape" {
+                                                                                editing_message_id.set(None);
+                                                                            }
                                                                         }
-                                                                    }
-                                                                />
-                                                                <div class=style::edit_buttons>
-                                                                    <button on:click=move |_| {
-                                                                        edit_message_action.dispatch((msg_id, edit_input.get()));
-                                                                    }>{"Сохранить"}</button>
-                                                                    <button on:click=move |_| editing_message_id.set(None)>{"Отмена"}</button>
+                                                                    />
+                                                                    <div class=style::edit_buttons>
+                                                                        <button on:click=move |_| {
+                                                                            edit_message_action.dispatch((msg_id, edit_input.get()));
+                                                                        }>{"Сохранить"}</button>
+                                                                        <button on:click=move |_| editing_message_id.set(None)>{"Отмена"}</button>
+                                                                    </div>
                                                                 </div>
-                                                            </div>
+                                                            }
                                                         }
-                                                    }
-                                                >
-                                                    <div class=style::message_content>
-                                                        <p>{msg.message.clone()}</p>
-                                                    </div>
-                                                </Show>
+                                                    >
+                                                        <div class=style::message_content on:contextmenu=move |ev| {
+                                                            ev.prevent_default();
+                                                            if let Some(area) = messages_area_ref.get() {
+                                                                let area_rect = area.get_bounding_client_rect();
+                                                                let x_offset = -150;
+                                                                let y_offset = -60;
+                                                                let x = ev.client_x() - area_rect.left() as i32 + area.scroll_left() as i32 + x_offset;
+                                                                let y = ev.client_y() - area_rect.top() as i32 + area.scroll_top() as i32 + y_offset;
 
-                                                <div class=style::time_and_status>
-                                                    <Show when=move || msg.is_pinned>
-                                                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M22.3126 10.1753L20.8984 11.5895L20.1913 10.8824L15.9486 15.125L15.2415 18.6606L13.8273 20.0748L9.58466 15.8321L4.63492 20.7819L3.2207 19.3677L8.17045 14.4179L3.92781 10.1753L5.34202 8.76107L8.87756 8.05396L13.1202 3.81132L12.4131 3.10422L13.8273 1.69L22.3126 10.1753Z"></path></svg>
+                                                                context_menu_state.set(Some(ContextMenuState {
+                                                                    message_id: msg.id,
+                                                                    is_my_message: msg.is_my_message,
+                                                                    is_pinned: msg.is_pinned,
+                                                                    x,
+                                                                    y,
+                                                                }));
+                                                            }
+                                                        }>
+                                                            <p>{msg.message.clone()}</p>
+                                                        </div>
                                                     </Show>
-                                                    <Show when=move || msg.is_edited>
-                                                        <span class=style::edited_indicator>"(изм.)"</span>
-                                                    </Show>
-                                                    <span>{time_str}</span>
-                                                    {if msg.is_my_message {
-                                                        view! {
-                                                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
-                                                                <path d="M11.602 13.7599L13.014 15.1719L21.4795 6.7063L22.8938 8.12051L13.014 18.0003L6.65 11.6363L8.06421 10.2221L10.189 12.3469L11.6025 13.7594L11.602 13.7599ZM11.6037 10.9322L16.5563 5.97949L17.9666 7.38977L13.014 12.3424L11.6037 10.9322ZM8.77698 16.5873L7.36396 18.0003L1 11.6363L2.41421 10.2221L3.82723 11.6352L3.82604 11.6363L8.77698 16.5873Z"></path>
-                                                            </svg>
-                                                        }.into_any()
-                                                    } else {
-                                                        view! { <span/> }.into_any()
-                                                    }}
+
+                                                    <div class=style::time_and_status>
+                                                        <Show when=move || msg.is_pinned>
+                                                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M22.3126 10.1753L20.8984 11.5895L20.1913 10.8824L15.9486 15.125L15.2415 18.6606L13.8273 20.0748L9.58466 15.8321L4.63492 20.7819L3.2207 19.3677L8.17045 14.4179L3.92781 10.1753L5.34202 8.76107L8.87756 8.05396L13.1202 3.81132L12.4131 3.10422L13.8273 1.69L22.3126 10.1753Z"></path></svg>
+                                                        </Show>
+                                                        <Show when=move || msg.is_edited>
+                                                            <span class=style::edited_indicator>"(изм.)"</span>
+                                                        </Show>
+                                                        <span>{time_str}</span>
+                                                        {if msg.is_my_message {
+                                                            view! {
+                                                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+                                                                    <path d="M11.602 13.7599L13.014 15.1719L21.4795 6.7063L22.8938 8.12051L13.014 18.0003L6.65 11.6363L8.06421 10.2221L10.189 12.3469L11.6025 13.7594L11.602 13.7599ZM11.6037 10.9322L16.5563 5.97949L17.9666 7.38977L13.014 12.3424L11.6037 10.9322ZM8.77698 16.5873L7.36396 18.0003L1 11.6363L2.41421 10.2221L3.82723 11.6352L3.82604 11.6363L8.77698 16.5873Z"></path>
+                                                                </svg>
+                                                            }.into_any()
+                                                        } else {
+                                                            view! { <span/> }.into_any()
+                                                        }}
+                                                    </div>
                                                 </div>
                                             </div>
                                         }.into_any(),
@@ -533,43 +586,47 @@ pub fn Messages(
                 </Show>
             </div>
 
-            <div class=style::message_input_area>
-                <button class=style::icon_button>
-                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
-                        <path d="M14 13.5V8C14 5.79086 12.2091 4 10 4C7.79086 4 6 5.79086 6 8V13.5C6 17.0899 8.91015 20 12.5 20C16.0899 20 19 17.0899 19 13.5V4H21V13.5C21 18.1944 17.1944 22 12.5 22C7.80558 22 4 18.1944 4 13.5V8C4 4.68629 6.68629 2 10 2C13.3137 2 16 4.68629 16 8V13.5C16 15.433 14.433 17 12.5 17C10.567 17 9 15.433 9 13.5V8H11V13.5C11 14.3284 11.6716 15 12.5 15C13.3284 15 14 14.3284 14 13.5Z"></path>
-                    </svg>
-                </button>
-                <form on:submit=|ev| ev.prevent_default()>
-                    <input
-                        type="text"
-                        placeholder="Напишите сообщение..."
-                        bind:value=messsage_input
-                        on:keyup=move |ev| {
-                            if ev.key() == "Enter" {
-                                on_submit();
-                            }
-                        }
-                    />
-                    <button
-                        class=format!("{} {}", style::icon_button, style::send_button)
-                        on:click=move |_| on_submit()
-                    >
+            <Show when=move || is_member.get()>
+                <div class=style::message_input_area>
+                    <button class=style::icon_button>
                         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
-                            <path d="M3 12.9999H9V10.9999H3V1.84558C3 1.56944 3.22386 1.34558 3.5 1.34558C3.58425 1.34558 3.66714 1.36687 3.74096 1.40747L22.2034 11.5618C22.4454 11.6949 22.5337 11.9989 22.4006 12.2409C22.3549 12.324 22.2865 12.3924 22.2034 12.4381L3.74096 22.5924C3.499 22.7255 3.19497 22.6372 3.06189 22.3953C3.02129 22.3214 3 22.2386 3 22.1543V12.9999Z"></path>
+                            <path d="M14 13.5V8C14 5.79086 12.2091 4 10 4C7.79086 4 6 5.79086 6 8V13.5C6 17.0899 8.91015 20 12.5 20C16.0899 20 19 17.0899 19 13.5V4H21V13.5C21 18.1944 17.1944 22 12.5 22C7.80558 22 4 18.1944 4 13.5V8C4 4.68629 6.68629 2 10 2C13.3137 2 16 4.68629 16 8V13.5C16 15.433 14.433 17 12.5 17C10.567 17 9 15.433 9 13.5V8H11V13.5C11 14.3284 11.6716 15 12.5 15C13.3284 15 14 14.3284 14 13.5Z"></path>
                         </svg>
                     </button>
-                </form>
-            </div>
+                    <form on:submit=|ev| ev.prevent_default()>
+                        <input
+                            type="text"
+                            placeholder="Напишите сообщение..."
+                            bind:value=messsage_input
+                            on:keyup=move |ev| {
+                                if ev.key() == "Enter" {
+                                    on_submit();
+                                }
+                            }
+                        />
+                        <button
+                            class=format!("{} {}", style::icon_button, style::send_button)
+                            on:click=move |_| on_submit()
+                        >
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+                                <path d="M3 12.9999H9V10.9999H3V1.84558C3 1.56944 3.22386 1.34558 3.5 1.34558C3.58425 1.34558 3.66714 1.36687 3.74096 1.40747L22.2034 11.5618C22.4454 11.6949 22.5337 11.9989 22.4006 12.2409C22.3549 12.324 22.2865 12.3924 22.2034 12.4381L3.74096 22.5924C3.499 22.7255 3.19497 22.6372 3.06189 22.3953C3.02129 22.3214 3 22.2386 3 22.1543V12.9999Z"></path>
+                            </svg>
+                        </button>
+                    </form>
+                </div>
+            </Show>
             <Show when=move || show_chat_settings_window.get()>
                 <ChatSettingsWindow
                     chat=chat_cloned.clone()
                     set_show_chat_settings_window=set_show_chat_settings_window
+                    avatar_count = avatar_count
                     refetch_chats=refetch_chats
                 />
             </Show>
-            <Show when=move || show_members_panel.get()>
+            <Show when=move || render_panel.get()>
                 <ChatMembersPanel
                     chat_id=chat_id
+                    show=animate_panel
                 />
             </Show>
         </div>
