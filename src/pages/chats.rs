@@ -3,7 +3,7 @@ use crate::components::chat::create_chat_window::CreateChatWindow;
 use crate::components::chat::messages::Messages;
 use crate::components::spinner::Spinner;
 use crate::models::chat::Chat;
-use crate::utils::API_BASE_URL;
+use crate::utils::{API_BASE_URL, get_current_user_id};
 use leptos::prelude::*;
 use stylance::import_style;
 
@@ -41,8 +41,9 @@ pub fn ChatsPage() -> impl IntoView {
                             key=|chat| chat.id
                             children=move |chat| {
                                 let chat_image = format!(
-                                    "{}/chat-image/{}",
+                                    "{}/chat-image/{}/{}",
                                     API_BASE_URL,
+                                    get_current_user_id().unwrap_or_default(),
                                     chat.id
                                 );
                                 view! {
